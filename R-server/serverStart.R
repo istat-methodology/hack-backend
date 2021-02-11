@@ -1,0 +1,6 @@
+print("Loading libraries.R...")
+source("libraries.R")
+print("Loading libraries.R ok ")
+print("Loading api-controller.R")
+source("api-controller.R")
+print("Loading api-controller.R ok ")

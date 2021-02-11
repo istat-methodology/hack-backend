@@ -1,0 +1,1 @@
+docker run -p 8085:8085 mecdcme/hackathon-r-service
