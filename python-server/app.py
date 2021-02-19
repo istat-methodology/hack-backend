@@ -12,4 +12,4 @@ class HelloWorld(Resource):
 api.add_resource(HelloWorld, '/')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8086)
+    app.run(debug=True, host='0.0.0.0', port=5000)
