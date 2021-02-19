@@ -2,18 +2,10 @@ version: '3'
 services:
   hackathon-python-service:
     image: mecdcme/hackathon-python-service:latest
-    deploy:
-      resources:
-        limits:
-          memory: 512M
     ports:
       - 5000:5000
   hackathon-r-service:
     image: mecdcme/hackathon-r-service:latest
-    deploy:
-      resources:
-        limits:
-          memory: 512M
     ports:
       - 6000:6000
    
