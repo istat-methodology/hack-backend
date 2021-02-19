@@ -7,6 +7,6 @@ services:
   hackathon-r-service:
     image: mecdcme/hackathon-r-service:latest
     ports:
-      - 6000:6000
+      - 5500:5500
    
    
