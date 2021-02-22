@@ -1,10 +1,10 @@
 FROM rocker/r-base
 
-COPY api-controller.R /home/api-controller.R
-COPY libraries.R /home/libraries.R
-COPY serverStart.R /home/serverStart.R
+COPY . /app/r-server
+COPY /data/ /app/r-server/data
+COPY /rscript/ /app/r-server/rscript 
 
-WORKDIR /home
+WORKDIR /app/r-server
 
 CMD ["Rscript", "serverStart.R"]
 
