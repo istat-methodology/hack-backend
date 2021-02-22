@@ -3,10 +3,10 @@ services:
   hackathon-python-service:
     image: mecdcme/hackathon-python-service:latest
     ports:
-      - 5000:5000
+      - 5500:5500
   hackathon-r-service:
     image: mecdcme/hackathon-r-service:latest
     ports:
-      - 5500:5500
+      - 5000:5000
    
    
