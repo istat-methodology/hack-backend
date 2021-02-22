@@ -1,1 +1,1 @@
-docker run -p 5600:5600 mecdcme/hackathon-r-service
+docker run -p 5000:5000 mecdcme/hackathon-r-service
