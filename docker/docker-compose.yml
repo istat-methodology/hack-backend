@@ -8,5 +8,9 @@ services:
     image: mecdcme/hackathon-r-service:latest
     ports:
       - 5000:5000
+  hackathon-front-end:
+    image: mecdcme/hackathon-front-end:latest
+    ports:
+      - 8900:8900
    
    
