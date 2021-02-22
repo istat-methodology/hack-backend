@@ -20,7 +20,8 @@ from flask import request
 
 
 
-Export_Graph0START = pd.read_excel("EXPORT_TOTAL.xlsx",)
+Export_Graph0START = pd.read_excel("data/EXPORT_TOTAL.xlsx",index_col=0)
+ 
 Export_Graph0 = Export_Graph0START.iloc[:,:6]
 Export_Graph0.columns
 Export_Graph0.columns=["EXP","PERIOD","23","IMP","value","PROD_COD"]
@@ -28,13 +29,16 @@ Export_Graph0.columns=["EXP","PERIOD","23","IMP","value","PROD_COD"]
 
 def GeneraGrafo(tg_period,tg_perc,pos_ini):
     Export_Graph0TOTAL = Export_Graph0
+   
     dummy = Export_Graph0TOTAL[Export_Graph0TOTAL["PERIOD"].str.contains(tg_period)].sort_values("value",ascending=False)
     SUM = dummy.value.sum()
     dummy = dummy[dummy.value.cumsum(skipna=False)/SUM*100<tg_perc]  
+     
     def shortNode(name):    
         return name[:2]  
+    print(Export_Graph0TOTAL.head())
     G = nx.DiGraph()
-    print(Export_Graph0TOTAL)
+  
     for node in set(np.hstack((dummy["IMP"].apply(shortNode).values,dummy["EXP"].apply(shortNode).values))):
         G.add_node(shortNode(node))
     for i,j in dummy.loc[:,["EXP","IMP"]].values:
@@ -54,8 +58,7 @@ def GeneraGrafo(tg_period,tg_perc,pos_ini):
             x= random.uniform(0, 1)
             y= random.uniform(0, 1)
             pos_ini[node['id']]=np.array([x,y])
-    print("fra")
-    print(G.order())
+    
     coord = nx.spring_layout(G,k=6/math.sqrt(G.order()), pos=pos_ini)
     #nx.draw(G, pos=coord, with_labels = True)
     #plt.savefig('Graph_'+tg_period+'.png')
