@@ -16,6 +16,7 @@ from flask import Flask
 from flask_cors import CORS # The typical way to import flask-cors
 import os
 from flask import request
+from flask import Response
 
 
 
@@ -54,7 +55,7 @@ def GeneraGrafo(tg_period,tg_perc,pos_ini):
             x= random.uniform(0, 1)
             y= random.uniform(0, 1)
             pos_ini[node['id']]=np.array([x,y])
-    print("fra")
+     
     print(G.order())
     coord = nx.spring_layout(G,k=6/math.sqrt(G.order()), pos=pos_ini)
     #nx.draw(G, pos=coord, with_labels = True)
@@ -122,9 +123,12 @@ def wordtradegraph(tg_period,tg_perc,Format):
     pos=None
     print(pos)  
     pos,JSON=GeneraGrafo(tg_period,int(tg_perc),pos)
-    print(pos)
+    resp = Response(response=JSON,
+                    status=200,
+                    mimetype="application/json")
 
-    return JSON
+    return resp
+
 
 @app.route('/hello')
 def hello():
