@@ -1,7 +1,7 @@
 
 checkAndInstall <- function(mypkg){
    if (! is.element(mypkg, installed.packages()[,1])) install.packages(mypkg)
-
+   library(mypkg)
   } 
 
 options(repos = "https://cran.mirror.garr.it/CRAN/")
@@ -17,8 +17,12 @@ print("Loading libraries...")
 #checkAndInstall("rspa")
 #checkAndInstall("varhandle")
 checkAndInstall("RestRserve")
-library("RestRserve")
 checkAndInstall("jsonlite")
-library("jsonlite")
+checkAndInstall(data.table)
+checkAndInstall(factoextra)
+checkAndInstall(plyr)
+checkAndInstall(dplyr)
+checkAndInstall(ggplot2)
+
 
 print("Loading libraries...ok ")

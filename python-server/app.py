@@ -16,12 +16,12 @@ from flask import Flask
 from flask_cors import CORS # The typical way to import flask-cors
 
 from flask import request
+from flask import Response
 
 
 
-
-Export_Graph0START = pd.read_excel("data/EXPORT_TOTAL.xlsx",index_col=0)
- 
+#Export_Graph0START = pd.read_excel("data/EXPORT_TOTAL.xlsx",index_col=0)
+Export_Graph0START = pd.read_excel("data/Cartel1.xlsx",index_col=0)
 Export_Graph0 = Export_Graph0START.iloc[:,:6]
 Export_Graph0.columns
 Export_Graph0.columns=["EXP","PERIOD","23","IMP","value","PROD_COD"]
@@ -122,10 +122,12 @@ def wordtradegraph(tg_period,tg_perc,Format):
     print(tg_period)
     print(tg_perc)
     pos=None
-    print(pos)  
+    #print(pos)  
     pos,JSON=GeneraGrafo(tg_period,int(tg_perc),pos)
-    print(pos)
-
+    print(JSON)
+    resp = Response(response=str(JSON),
+                    status=200,
+                    mimetype="application/json")
     return str(JSON)
 
 @app.route('/hello')
