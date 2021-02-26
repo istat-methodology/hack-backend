@@ -1,6 +1,6 @@
 
 countries <- function(){
-  countries <- COUNTRIES
+  countries <- fromJSON(FILE_COUNTRY)
   return (countries)
 }
 
