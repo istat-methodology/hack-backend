@@ -85,14 +85,14 @@ def GeneraGrafo(tg_period,tg_perc,pos_ini):
     res = dfe.set_index('source').join(out[['label','id']].set_index('label'), on='source', how='left')
     res.columns=['target', 'source_id']
     res2 = res.set_index('target').join(out[['label','id']].set_index('label'), on='target', how='left')
-    res2.columns=['"from"','"to"']
+    res2.columns=['from','to']
     res2.reset_index(drop=True, inplace=True)
     dict_edges= res2.T.to_dict().values()
     new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges)}
-    with open('graph_final_' + tg_period +'.json', 'w') as outfile:
-      json.dump(new_dict,outfile) 
-    with open('graph_final_' + tg_period +'.json', 'r') as outfile:
-       JSON=json.load(outfile) 
+    #with open('graph_final_' + tg_period +'.json', 'w') as outfile:
+    JSON=  json.dumps(new_dict) 
+    #with open('graph_final_' + tg_period +'.json', 'r') as outfile:
+    #   JSON=json.load(outfile) 
 	
     return coord,str(JSON).replace("'",'"').replace('""','"')
 
