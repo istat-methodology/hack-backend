@@ -3,8 +3,8 @@ ris<-list()
 descSummary <- function(region, subregion) {
   
   #Global_Mobility_Report<- paste(basedir,read.csv("DB_GoogleMobility.csv"),sep="/")
- # region     = "Italy" # Paese Europeo da Scaricare
-#  subregion  = "Italy" 
+ # region     = "Italy"         # Paese Europeo da Scaricare
+#   subregion  = "Italy" 
  
   #print("aaaa")
   gmr<-subset(GMR,Country==region)
