@@ -1,4 +1,4 @@
-FROM rocker/r-base
+FROM rocker/r-base:latest
 
 COPY . /app/r-server
 COPY /data/ /app/r-server/data

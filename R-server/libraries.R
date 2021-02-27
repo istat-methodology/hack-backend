@@ -1,28 +1,24 @@
 
-checkAndInstall <- function(mypkg){
-   if (! is.element(mypkg, installed.packages()[,1])) install.packages(mypkg)
-   library(mypkg)
-  } 
 
 options(repos = "https://cran.mirror.garr.it/CRAN/")
 
 print("Loading libraries...")
 
-#checkAndInstall("validate")
-#checkAndInstall("validatetools")
-#checkAndInstall("errorlocate")
-#checkAndInstall("univOutl")
-#checkAndInstall("simputation")
-#checkAndInstall("VIM")
-#checkAndInstall("rspa")
-#checkAndInstall("varhandle")
-checkAndInstall("RestRserve")
-checkAndInstall("jsonlite")
-checkAndInstall("data.table")
-checkAndInstall("factoextra")
-checkAndInstall("plyr")
-checkAndInstall("dplyr")
-checkAndInstall("ggplot2")
+#install.packages("validate")
+#install.packages("validatetools")
+#install.packages("errorlocate")
+#install.packages("univOutl")
+#install.packages("simputation")
+#install.packages("VIM")
+#install.packages("rspa")
+#install.packages("varhandle")
+install.packages("RestRserve")
+install.packages("jsonlite")
+install.packages("data.table")
+install.packages("factoextra")
+install.packages("plyr")
+install.packages("dplyr")
+install.packages("ggplot2")
 
 
 print("Loading libraries...ok ")

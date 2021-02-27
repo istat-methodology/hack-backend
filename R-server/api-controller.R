@@ -1,12 +1,12 @@
-library(RestRserve)
-library(jsonlite)
-library(data.table)
-library(factoextra)
-library(plyr) 
-library(dplyr)
-library(ggplot2)
+library("RestRserve")
+library("jsonlite")
+library("data.table")
+library("factoextra")
+library("plyr") 
+library("dplyr")
+library("ggplot2")
 
-# Input che l'utente volendo pu� impostare
+# Input che l'utente volendo puï¿½ impostare
 
 
 basedir = ("./rscript")
@@ -31,7 +31,7 @@ source(paste(basedir,"PolicyIndicator_function.R",sep="/"))
 ## source(".. ")
 ##
 app = Application$new()
-COUNTRIES<-countries()
+COUNTRIES<-loadCountries()
 GMR<-loadData()
 head(GMR)
  
@@ -60,7 +60,7 @@ app$add_get(
 # Da questa funzione esce un oggetto contenente 6 data-frame uguali in ciascuno sono 
 # contenuti 3 vettori: Date: le date (asse x), Value (i valori della serie da plottare come
 # linee che partono dallo zero fino al punto indicato), Smooth(y di una linea rossa leggermente
-# pi� spessa) - I 6 grafici avranno i seguenti nomi:
+# piï¿½ spessa) - I 6 grafici avranno i seguenti nomi:
 # Frame 1: Region (parametro dinamico) Retail
 # Frame 2: Region (parametro dinamico) Grocery and Pharmacy 
 # Frame 3: Region (parametro dinamico) Parks
@@ -105,12 +105,9 @@ app$add_get(
 app$add_get(
   path = "/countries", 
   FUN = function(.req, .res) {
-    print("/policy-indicator")
-    resp<-countries()  
-    print(resp)
-    .res$set_body(resp)
-    
-    .res$set_content_type("application/json")
+   resp<-countries(.req$get_param_query("country"),.req$get_param_query("name"))  
+   .res$set_body(resp)
+ 
   })
 
 
