@@ -120,7 +120,7 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
         #G.add_edge(i,j)
     G.add_weighted_edges_from(edges)
         
-	MetricG=calc_metrics(G,weight_flag)    
+    MetricG=calc_metrics(G,weight_flag)    
 	
 		
     GG=json_graph.node_link_data(G)
