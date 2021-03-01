@@ -88,6 +88,18 @@ def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,
 
 def makeGraph(tab4graph,pos_ini,weight_flag,flow):
     import networkx as nx
+	
+	
+    def calc_metrics(Grafo,FlagWeight): 
+        Metrics={
+            "degree_centrality":nx.degree_centrality(Grafo),
+            "density":nx.density(Grafo)
+            }
+
+
+        return Metrics 
+	
+	
     G = nx.DiGraph()
     if flow==1:
         print("import")
@@ -108,6 +120,9 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
         #G.add_edge(i,j)
     G.add_weighted_edges_from(edges)
         
+	MetricG=calc_metrics(G,weight_flag)    
+	
+		
     GG=json_graph.node_link_data(G)
     Nodes=GG["nodes"]
     Links=GG["links"] 
@@ -147,7 +162,8 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
     res2.columns=['"from"','"to"']
     res2.reset_index(drop=True, inplace=True)
     dict_edges= res2.T.to_dict().values()
-    new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges)}
+    new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges),"metriche":MetricG}
+	
     JSON=json.dumps(new_dict) 
 
     
