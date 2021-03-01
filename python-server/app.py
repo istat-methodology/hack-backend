@@ -41,7 +41,6 @@ def load_files_available():
 
 df_transport = load_files_available()      
 
-NTSR_prod_dict
 
 #build dict mapping NTSR prod and viceversa
 NTSR_prod=pd.read_csv(NTSR_PROD_FILE,"\t",index_col=0)#.to_dict()
