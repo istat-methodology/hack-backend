@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import os
 import pandas as pd
 import numpy as np
@@ -8,7 +5,7 @@ import random
 import math
 from networkx.readwrite import json_graph
 import json
-from flask import Response
+
 DATA_AVAILABLE="data"+os.sep+"dataAvailable"
 SEP=","
 DATA_EXTENTION=".dat"
@@ -42,9 +39,9 @@ def load_files_available():
             
     return df
 
-        
+df_transport = load_files_available()      
 
-df_transport = load_files_available()
+NTSR_prod_dict
 
 #build dict mapping NTSR prod and viceversa
 NTSR_prod=pd.read_csv(NTSR_PROD_FILE,"\t",index_col=0)#.to_dict()
@@ -57,16 +54,35 @@ prod_NTSR_dict=prod_NTSR_dict.set_index("AGRICULTURAL PRODUCTS AND LIVE ANIMALS"
 
 
 
-def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio):
+def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges):
     df_transport_estrazione = df_transport[df_transport["PERIOD"]==tg_period]
     df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["TRANSPORT_MODE"].isin(listaMezzi)]
     df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["FLOW"]==flow]
     df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["PRODUCT_NSTR"]==product]
 
-    df_transport_estrazione=df_transport_estrazione.groupby(["DECLARANT_ISO","PARTNER_ISO"]).sum().reset_index()[["DECLARANT_ISO","PARTNER_ISO","VALUE_IN_EUROS","QUANTITY_IN_KG"]]
+    def build_query_mezzi(selezioneMezziEdges):
+        listQuery=[]
+        for edge in selezioneMezziEdges['edgesSelected']:
+            print("@@@@@@@@@@@",edge)
+            From=edge["from"]
+            To=edge["to"]
+            exclude=edge["exclude"]
+            print (edge,From,To,exclude)    
+            listQuery.append("(DECLARANT_ISO == '"+From+"' & PARTNER_ISO == '"+To+"' & TRANSPORT_MODE in ["+exclude+"])")
+        return "not ("+("|".join(listQuery))+")"    
+    if (selezioneMezziEdges is not None):
+        Query=build_query_mezzi(selezioneMezziEdges)
+        print(Query)
+        df_transport_estrazione=df_transport_estrazione.query(Query)
+
+
     
+    #aggrega
+    df_transport_estrazione=df_transport_estrazione.groupby(["DECLARANT_ISO","PARTNER_ISO"]).sum().reset_index()[["DECLARANT_ISO","PARTNER_ISO","VALUE_IN_EUROS","QUANTITY_IN_KG"]]
     df_transport_estrazione=df_transport_estrazione.sort_values(criterio,ascending=False)
-    SUM = df_transport_estrazione[criterio].sum()    
+
+    #taglio sui nodi
+    SUM = df_transport_estrazione[criterio].sum()     
     df_transport_estrazione = df_transport_estrazione[df_transport_estrazione[criterio].cumsum(skipna=False)/SUM*100<tg_perc] 
     
     return df_transport_estrazione
@@ -145,7 +161,7 @@ def jsonpos2coord(jsonpos):
         coord[id]=np.array([x,y])
     return coord    
 
-from flask import Flask,request
+from flask import Flask,request,Response
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources=r'/*')
@@ -171,8 +187,8 @@ def wordtradegraph():
         if pos=="None":
             pos=None
         else:
-            #print ("pos-----",pos)
-            #print ("pos-----",type(pos))
+            print ("pos-----",pos)
+            print ("pos-----",type(pos))
             
             pos=jsonpos2coord(pos)
 
@@ -184,9 +200,20 @@ def wordtradegraph():
         product=str(jReq['product'])
         
         weight_flag=bool(jReq['weight_flag'])
+        
+        selezioneMezziEdges=jReq['selezioneMezziEdges']  
+        if selezioneMezziEdges=="None":
+            selezioneMezziEdges=None
+        else:
+            pass
+            print(selezioneMezziEdges)
+        #--------------------
+        
+        
 
-        tab4graph=estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio)
+        tab4graph=estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges)
 
+        
         pos,JSON=makeGraph(tab4graph,pos,weight_flag,flow)
 
         
@@ -199,6 +226,7 @@ def wordtradegraph():
     else:
         return str("only post")
 
+
 @app.route('/hello')
 def hello():
      return str(' world')
@@ -209,146 +237,3 @@ if __name__ == '__main__':
     IP='0.0.0.0'
     port=5500
     app.run(host=IP, port=port)
-
-
-##############################################
-
-
-'''
-import pandas as pd
-import math
-import matplotlib.pyplot as plt
-import random
-import pickle
-import json
-import networkx as nx
-import numpy as np
-import sys
-import re
-from networkx.readwrite import json_graph
-from flask import Flask
-from flask_cors import CORS # The typical way to import flask-cors
-import os
-from flask import request
-from flask import Response
-
-
-
-
-Export_Graph0START = pd.read_excel("data/EXPORT_TOTAL.xlsx",index_col=0)
-#Export_Graph0START = pd.read_excel("data/Cartel1.xlsx",index_col=0)
-Export_Graph0 = Export_Graph0START.iloc[:,:6]
-Export_Graph0.columns
-Export_Graph0.columns=["EXP","PERIOD","23","IMP","value","PROD_COD"]
-
-
-def GeneraGrafo(tg_period,tg_perc,pos_ini):
-    Export_Graph0TOTAL = Export_Graph0
-    dummy = Export_Graph0TOTAL[Export_Graph0TOTAL["PERIOD"].str.contains(tg_period)].sort_values("value",ascending=False)
-    SUM = dummy.value.sum()
-    dummy = dummy[dummy.value.cumsum(skipna=False)/SUM*100<tg_perc]  
-    def shortNode(name):    
-        return name[:2]  
-    G = nx.DiGraph()
-    #print(Export_Graph0TOTAL)
-    for node in set(np.hstack((dummy["IMP"].apply(shortNode).values,dummy["EXP"].apply(shortNode).values))):
-        G.add_node(shortNode(node))
-    for i,j in dummy.loc[:,["EXP","IMP"]].values:
-        #print (shortNode(i),shortNode(j))
-        G.add_edge(shortNode(i),shortNode(j))
-    #plt.figure(figsize=(15,10))
-    #ax = plt.gca()
-    string_titolo = tg_period + "  " + str(tg_perc) + "%"
-    #ax.set_title(string_titolo)
-    GG=json_graph.node_link_data(G)
-    Nodes=GG["nodes"]
-    Links=GG["links"]    
-    if pos_ini is None:
-        pos_ini={}
-        random.seed(7)
-        for node in Nodes:
-            x= random.uniform(0, 1)
-            y= random.uniform(0, 1)
-            pos_ini[node['id']]=np.array([x,y])
-   
-    #print(G.order())
-    coord = nx.spring_layout(G,k=6/math.sqrt(G.order()), pos=pos_ini)
-    #nx.draw(G, pos=coord, with_labels = True)
-    #plt.savefig('Graph_'+tg_period+'.png')
-
-    #plt.show()
-    
-
-    with open('pos_fin'+ tg_period +'.pickle', 'wb') as fp:
-        pickle.dump(coord, fp)
-    with open('pos_fin'+ tg_period +'.pickle', 'rb') as fp:
-        coordPred=pickle.load(fp)
-    
-    
-    #########################################################
-    df_coord = pd.DataFrame.from_dict(coord,orient='index')
-    df_coord.columns = ['x', 'y']
-    df = pd.DataFrame(GG["nodes"])
-    df.columns=['label']
-    df['id'] = np.arange(df.shape[0])
-    df = df[['id', 'label']]    
-    out = pd.merge(df, df_coord, left_on='label', right_index=True)
-    
-    dict_nodes = out.T.to_dict().values()
-    dfe = pd.DataFrame(GG["links"])
-    res = dfe.set_index('source').join(out[['label','id']].set_index('label'), on='source', how='left')
-    res.columns=['target', 'source_id']
-    res2 = res.set_index('target').join(out[['label','id']].set_index('label'), on='target', how='left')
-    res2.columns=['from','to']
-    res2.reset_index(drop=True, inplace=True)
-    dict_edges= res2.T.to_dict().values()
-    new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges)}
-    #with open('graph_final_' + tg_period +'.json', 'w') as outfile:
-    JSON=  json.dumps(new_dict) 
-    #with open('graph_final_' + tg_period +'.json', 'r') as outfile:
-    #   JSON=json.load(outfile) 
-	
-    return coord,str(JSON).replace("'",'"').replace('""','"')
-
-
-#lista_periods=Export_Graph0.PERIOD.drop_duplicates().values
-#
-#tg_perc=30
-#pos=None
-#for tg_period in lista_periods[:2]:
-#    if pos is None:
-#        pos,JSON=GeneraGrafo(tg_period,tg_perc,pos)
-#    pos,JSON=GeneraGrafo(tg_period,tg_perc,pos)
-#    print(JSON)
-
-app = Flask(__name__)
-CORS(app, resources=r'/*')
-
-###########GRAPH METHOD#######################################################
-@app.route('/wordtradegraph/<tg_period>/<tg_perc>/<Format>')
-def wordtradegraph(tg_period,tg_perc,Format):
-  #  print ("Word Trade Graph method get ....")
-  #  print(tg_period)
-  #  print(tg_perc)
-    pos=None
-  #  print(pos)  
-    pos,JSON=GeneraGrafo(tg_period,int(tg_perc),pos)
-  #  print(pos)
-    resp = Response(response=JSON,
-                    status=200,
-                    mimetype="application/json")
-
-    return resp
-    
-
-@app.route('/hello')
-def hello():
-     return str(' world')
-     
-     
-if __name__ == '__main__':
-    IP='0.0.0.0'
-    port=5500
-    app.run(host=IP, port=port)
-'''
-
