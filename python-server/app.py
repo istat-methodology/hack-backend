@@ -208,7 +208,8 @@ def wordtradegraph():
             pos=jsonpos2coord(pos)
 
         #0:Unknown 1:Sea 2:Rail 3:Road 4Air 5:Post 7:Fixed Mechanism 8:Inland Waterway 9:Self Propulsion
-        listaMezzi=map(int,(jReq['listaMezzi']).split(","))#[0,1,2,3,4,5,7,8,9] 
+        #listaMezzi=map(int,(jReq['listaMezzi']).split(","))#[0,1,2,3,4,5,7,8,9] 
+		listaMezzi=jReq['listaMezzi']#[0,1,2,3,4,5,7,8,9] 
         
         flow=int(jReq['flow'])
         
