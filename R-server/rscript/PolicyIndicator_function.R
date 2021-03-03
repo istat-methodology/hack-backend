@@ -20,28 +20,28 @@ PolInd <- function( region, subregion) {
                 library(ggplot2)
                 # Results for Variables
                 res.var <- get_pca_var(PCAest)
-                print(res.var$coord)          # Coordinates
-                print(res.var$contrib)        # Contributions to the PCs
-                print(res.var$cos2)           # Quality of representation 
+                #print(res.var$coord)          # Coordinates
+                #print(res.var$contrib)        # Contributions to the PCs
+                #print(res.var$cos2)           # Quality of representation 
                 
                 eig <- get_eig(PCAest)
                 ExpVar <- as.data.frame(eig[2])
                 
                 tab_res<-as.data.frame(res.var[c(1,4,3)])
                 tab_res<-tab_res[c(1,7,13)]
-            #    View(tab_res)
+                #View(tab_res)
                 tab_var<-c("Coordinates","Contributions to the PCs","Quality of representation")
                 colnames(tab_res)<-tab_var
                 
-              #  dev.new()
-              #  print(fviz_eig(PCAest))
+                #dev.new()
+                #print(fviz_eig(PCAest))
                 
-              #  dev.new()
-              #  print(fviz_pca_var(PCAest,
-              #                     col.var = "contrib", # Color by contributions to the PC
-              #                     gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-              #                     repel = TRUE     # Avoid text overlapping
-              #  ) +   labs(title = paste(subregion,"Variables - PCA",sep=" ")))
+                #dev.new()
+                #print(fviz_pca_var(PCAest,
+                #                   col.var = "contrib", # Color by contributions to the PC
+                #                   gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                #                   repel = TRUE     # Avoid text overlapping
+                #) +   labs(title = paste(subregion,"Variables - PCA",sep=" ")))
                 
                 PC1 <- PCAest$x[,'PC1']
                 
@@ -80,7 +80,12 @@ PolInd <- function( region, subregion) {
                 
                 PCAresult<- as.data.frame(tab_res)
                 
-                return(list(PCAresult,ExpVar,DPolInd,MPolInd))
+                reslist <-list("Variance (%)"=ExpVar,"Daily Policy Mobility Index"=DPolInd,
+                               "Monthly Policy Mobility Index"=MPolInd)
+                
+                #names(ExpVar)<- c("Variance (%)")
+                
+                return(reslist)
                 
         }
 

@@ -22,12 +22,12 @@ PlotMobComp <- function(  region, subregion) {
     c<-data.frame(a,b)
     a<-c[,1]
     b<-c[,2]
-    print("i")
-    print(i)
-    print("a")
-    print(a)
-    print("b")
-    print(b)
+    #print("i")
+    #print(i)
+    #print("a")
+    #print(a)
+    #print("b")
+    #print(b)
     smoothingSpline = smooth.spline(a,b, spar=0.35)
     
     df = data.frame(a,b,smoothingSpline$y)
@@ -36,11 +36,13 @@ PlotMobComp <- function(  region, subregion) {
     
     rm(df)
     rm(smoothingSpline)
-    print(i)
-    }
+    #print(i)
+  }
   
-   
-  return(list(comp1,comp2,comp3,comp4,comp5,comp6))
+  reslist <-list("Retail"=comp1,"Grocery_Pharmacy"=comp2,
+                 "Parks"=comp3,"Transit_Station"=comp4,
+                 "Workplaces"=comp5,"Residential"=comp6)
+  return(reslist)
   
   rm(dbr)
  
