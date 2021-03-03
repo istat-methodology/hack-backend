@@ -159,7 +159,7 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
     res = dfe.set_index('source').join(out[['label','id']].set_index('label'), on='source', how='left')
     res.columns=['target', 'source_id']
     res2 = res.set_index('target').join(out[['label','id']].set_index('label'), on='target', how='left')
-    res2.columns=['"from"','"to"']
+    res2.columns=['from','to']
     res2.reset_index(drop=True, inplace=True)
     dict_edges= res2.T.to_dict().values()
     new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges),"metriche":MetricG}
