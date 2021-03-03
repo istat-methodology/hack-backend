@@ -19,6 +19,9 @@ install.packages("factoextra")
 install.packages("plyr")
 install.packages("dplyr")
 install.packages("ggplot2")
-
+install.packages("sandwich")
+install.packages("zoo")
+install.packages("its.analysis")
+install.packages("lmtest")
 
 print("Loading libraries...ok ")

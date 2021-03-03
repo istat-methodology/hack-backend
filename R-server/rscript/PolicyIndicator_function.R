@@ -62,7 +62,7 @@ PolInd <- function( region, subregion) {
                 
                 db_stat$PolInd <- PolInd
                 
-                library(zoo)
+               
                 x <- as.POSIXct(db_stat$Dates,format="%Y-%m-%d")
                 mo <- strftime(x, "%m")
                 yr <- strftime(x, "%Y")
@@ -80,8 +80,8 @@ PolInd <- function( region, subregion) {
                 
                 PCAresult<- as.data.frame(tab_res)
                 
-                reslist <-list("Variance (%)"=ExpVar,"Daily Policy Mobility Index"=DPolInd,
-                               "Monthly Policy Mobility Index"=MPolInd)
+                reslist <-list("Variance"=ExpVar,"DPM_Index"=DPolInd,
+                               "MPM_Index"=MPolInd,"PCAresult"=PCAresult)
                 
                 #names(ExpVar)<- c("Variance (%)")
                 

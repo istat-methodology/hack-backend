@@ -2,7 +2,7 @@
 #grafici serie tendenziali e serie originale
 
 sa<-function(flow,VAR,country,partner,year,month){
-
+  
   #decido anno e mese di trattamento (123 = MARZO 2020)
   #year  = 2020 
   #month = 3    # marzo
@@ -10,8 +10,9 @@ sa<-function(flow,VAR,country,partner,year,month){
 
   dati<-data_function(flow,VAR,country,partner)
   dati<-dati[order(dati$year,dati$month),]
-  
-  treat <- which(dati$year == year)[[1]] + month - 1
+
+  treat <- which(dati$year == as.numeric(year))[[1]] +as.numeric(month) - 1
+ 
   ################################################################
   strdate = paste("01",paste(dati$month[1],dati$year[1],sep="/"),sep="/")
   enddate = paste("01",paste(dati$month[length(dati$month)],dati$year[length(dati$year)],sep="/"),sep="/")

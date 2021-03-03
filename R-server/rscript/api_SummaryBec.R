@@ -4,18 +4,19 @@ BEC <- function(flow,country,partner,year,month){
   #decido anno e mese di trattamento (123 = MARZO 2020)
   #year  = 2020 
   #month = 3    # marzo
+ 
 
-
-  for (i in 1:7)
-  {VAR=i
-  d<-data_function(flow,VAR,country,partner)
-  assign(paste0("d",i),d) 
-  rm(d)
-  rm(VAR)
-  }
-  
-  #treat <- which(db$year == year)[[1]] + month - 1
-  
+ 
+  d<-data_function_bec(flow,country,partner)
+  d1<-as.data.frame(d[[1]],)
+  d2<-as.data.frame(d[[2]],)
+  d3<-as.data.frame(d[[3]],)
+  d4<-as.data.frame(d[[4]],)
+  d5<-as.data.frame(d[[5]],)
+  d6<-as.data.frame(d[[6]],)
+  d7<-as.data.frame(d[[7]],)
+ 
+  treat <- which(d1$year == as.numeric(year))[[1]] +as.numeric(month) - 1
   #a2 <- a1 %>% select(PARTNER==partner)
   
   #db$Var <- as.numeric(db$VAR)
@@ -30,7 +31,7 @@ BEC <- function(flow,country,partner,year,month){
   #library(reshape2)
   #prova <-dcast(a2, VAR~ bec3)
   
-  treat <- which(d1$year == year)[[1]] + month - 1
+ 
   
   #a2 <- a1 %>% select(starts_with(partner))
   #aa <- cbind(a0,a2)
@@ -70,7 +71,7 @@ BEC <- function(flow,country,partner,year,month){
   d<-as.data.frame(dati_b[,c(1:7)])
   d$Date <- dati_b$Date
   
-  
+
   
   ris<-list()
   risT <-list()
