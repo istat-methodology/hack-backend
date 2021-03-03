@@ -121,9 +121,9 @@ def delete_link(G_prod, G_all, country_del, tg_country):
     roots = { key: value for key, value in poss_root.items() if value == 0.0 }
     lista_roots = list(roots.keys())
     
-    #if country_del in lista_roots:
-    #    lista_roots.remove(country_del)
-    lista_roots=list(set(lista_roots).difference(set([country_del])))
+    if country_del in lista_roots:
+        lista_roots.remove(country_del)
+    #lista_roots=list(set(lista_roots).difference(set([country_del])))
     
     print("Lista:")
     print("lista_roots:")
