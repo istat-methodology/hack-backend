@@ -101,7 +101,9 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
             
         Metrics={
             "product spread":nx.density(Grafo),
+            "density":nx.density(Grafo),
             "vulnerability":dict((k, (1-v)) for k, v in in_deg.items()),
+            "degree_centrality":nx.out_degree_centrality(Grafo),
             "exportation strenght":nx.out_degree_centrality(Grafo),
             "hubness":nx.betweenness_centrality(Grafo, weight="value")
         }
