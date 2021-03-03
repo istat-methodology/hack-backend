@@ -30,9 +30,9 @@ source(paste(basedir,"PlotMobComp_function.R",sep="/"))
 source(paste(basedir,"PolicyIndicator_function.R",sep="/"))
 source(paste(basedir,"api_SummaryBec.R",sep="/"))
 source(paste(basedir,"api_loadcomext_function.r",sep="/"))
-source(paste(basedir,"api_data_function.r",sep="/"))
+source(paste(basedir,"api_data_function.R",sep="/"))
 source(paste(basedir,"api_sa_function.r",sep="/"))
-source(paste(basedir,"api_itsa.r",sep="/"))
+source(paste(basedir,"api_itsa.R",sep="/"))
 
 #region="Italy"
 #subregion="Italy"
