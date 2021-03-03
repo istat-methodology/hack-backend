@@ -60,7 +60,11 @@ prod_NTSR_dict=prod_NTSR_dict.set_index("AGRICULTURAL PRODUCTS AND LIVE ANIMALS"
 #G_prod = b (Grafo delle importazioni)
 #G_all = G  (Grafo delle importazioni)
 
-def delete_link(G_prod, G_all, tg_country, country_del):
+
+
+
+
+def delete_link(G_prod, G_all, country_del,tg_country):
 
     deg_all = nx.out_degree_centrality(G_all)
     poss_root = nx.out_degree_centrality(G_prod)
@@ -69,15 +73,16 @@ def delete_link(G_prod, G_all, tg_country, country_del):
     
     if country_del in lista_roots:
         lista_roots.remove(country_del)
+    #lista_roots=list(set(lista_roots).difference(set([country_del])))
     
     print("Lista:")
     print(lista_roots)
-    print(deg_all)
+    #print(deg_all)
     
     Out_suggestions = {}
     
     for r in lista_roots:  
-        #print(r)
+        print(r)
         
         if r in deg_all.keys():        
             try:
@@ -87,6 +92,60 @@ def delete_link(G_prod, G_all, tg_country, country_del):
                 
             try:
                 path_all = nx.shortest_path(G_all, source=tg_country, target=r, weight="value")
+            except nx.NetworkXNoPath:
+                path_all='No path'
+            
+            Out_suggestions[r]={
+                "num_exportations":deg_all[r],
+                "path_actual": path_actual,
+                "path_all": path_all,
+                }          
+        else:
+            print(r + " not present")
+    
+    return Out_suggestions
+
+
+
+
+
+
+
+
+
+
+def delete_link(G_prod, G_all, country_del, tg_country):
+
+    deg_all = nx.out_degree_centrality(G_all)
+    poss_root = nx.out_degree_centrality(G_prod)
+    roots = { key: value for key, value in poss_root.items() if value == 0.0 }
+    lista_roots = list(roots.keys())
+    
+    #if country_del in lista_roots:
+    #    lista_roots.remove(country_del)
+    lista_roots=list(set(lista_roots).difference(set([country_del])))
+    
+    print("Lista:")
+    print("lista_roots:")
+    print(lista_roots)
+    print("deg_all:")
+    print(deg_all)
+    
+    Out_suggestions = {}
+    
+    for r in lista_roots:  
+        print(r)
+        
+        if r in deg_all.keys():
+            #print (deg_all.keys())
+            print("---------",deg_all[r])
+            try:
+                path_actual = nx.shortest_path(G_prod, source=tg_country, target=r)#, weight="value")      
+            except nx.NetworkXNoPath:
+                path_actual ='No actual path'
+                
+            try:
+                path_all = nx.shortest_path(G_all, source=tg_country, target=r)#, weight="value")
             except nx.NetworkXNoPath:
                 path_all='No path'
             
