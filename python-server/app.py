@@ -33,9 +33,9 @@ def load_files_available():
             print ("\t","shape",appo.shape)
             df=df.append(appo)
             
-            df=df[df["PRODUCT_NSTR"]!="TOT"]
-            df=df[df["DECLARANT_ISO"]!="EU"]
-            df=df[df["PARTNER_ISO"]!="EU"]
+    df=df[df["PRODUCT_NSTR"]!="TOT"]
+    df=df[df["DECLARANT_ISO"]!="EU"]
+    df=df[df["PARTNER_ISO"]!="EU"]
             
             
     return df
@@ -56,26 +56,31 @@ prod_NTSR_dict=prod_NTSR_dict.set_index("AGRICULTURAL PRODUCTS AND LIVE ANIMALS"
 
 def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges):
     df_transport_estrazione = df_transport[df_transport["PERIOD"]==tg_period]
+    
     df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["TRANSPORT_MODE"].isin(listaMezzi)]
+
     df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["FLOW"]==flow]
     df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["PRODUCT_NSTR"]==product]
 
     def build_query_mezzi(selezioneMezziEdges):
         listQuery=[]
         for edge in selezioneMezziEdges:#['edgesSelected']:
-            print("@@@@@@@@@@@",edge)
+
             From=edge["from"]
             To=edge["to"]
             exclude=str(edge["exclude"])
-            print (type(edge),type(From),type(To),type(exclude))    
-            listQuery.append("(DECLARANT_ISO == '"+From+"' & PARTNER_ISO == '"+To+"' & TRANSPORT_MODE in "+exclude+")")
-        return "not ("+("|".join(listQuery))+")"    
+
+
+            listQuery.append("((DECLARANT_ISO == '"+From+"' & PARTNER_ISO == '"+To+"' & TRANSPORT_MODE in "+exclude+")|(DECLARANT_ISO == '"+To+"' & PARTNER_ISO == '"+From+"' & TRANSPORT_MODE in "+exclude+"))")
+        return "not ("+("|".join(listQuery))+")"
+    
     if (selezioneMezziEdges is not None):
         Query=build_query_mezzi(selezioneMezziEdges)
-        print(Query)
+
         df_transport_estrazione=df_transport_estrazione.query(Query)
-
-
+        print(Query)
+    print(df_transport_estrazione[["TRANSPORT_MODE","DECLARANT_ISO","PARTNER_ISO"]])
+    print(df_transport_estrazione.shape)
     
     #aggrega
     df_transport_estrazione=df_transport_estrazione.groupby(["DECLARANT_ISO","PARTNER_ISO"]).sum().reset_index()[["DECLARANT_ISO","PARTNER_ISO","VALUE_IN_EUROS","QUANTITY_IN_KG"]]
@@ -92,12 +97,15 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
 	
 	
     def calc_metrics(Grafo,FlagWeight): 
-        Metrics={
-            "degree_centrality":nx.degree_centrality(Grafo),
-            "density":nx.density(Grafo)
+        in_deg = nx.in_degree_centrality(Grafo)
+            
+        Metrics={'metriche':{
+            "product spread":nx.density(Grafo),
+            "vulnerability":dict((k, (1-v)) for k, v in in_deg.items()),
+            "exportation strenght":nx.out_degree_centrality(Grafo),
+            "hubness":nx.betweenness_centrality(Grafo, weight="value")
             }
-
-
+        }
         return Metrics 
 	
 	
@@ -121,9 +129,12 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
         #G.add_edge(i,j)
     G.add_weighted_edges_from(edges)
     MetricG=calc_metrics(G,weight_flag)	
-    f=open ("Erika.pkl","wb")
-    pickle.dump(f,G)
-    f.close()
+	
+    import pickle
+    with open ("G_dump.pkl","wb") as f:
+        pickle.dump(G,f)
+
+
     GG=json_graph.node_link_data(G)
     Nodes=GG["nodes"]
     Links=GG["links"] 
@@ -135,11 +146,16 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
             x= random.uniform(0, 1)
             y= random.uniform(0, 1)
             pos_ini[node['id']]=np.array([x,y])
+    try:
+        coord = nx.spring_layout(G,k=5/math.sqrt(G.order()),pos=pos_ini)
+        coord = nx.spring_layout(G,k=5/math.sqrt(G.order()),pos=coord) # stable solution
+        #coord = nx.spring_layout(G,k=5/math.sqrt(G.order()),pos=coord) # stable solution
+    except:
+        return None,None
+        
 
-    coord = nx.spring_layout(G,k=5/math.sqrt(G.order()),pos=pos_ini)
-    coord = nx.spring_layout(G,k=5/math.sqrt(G.order()),pos=coord) # stable solution
-    #coord = nx.spring_layout(G,k=5/math.sqrt(G.order()),pos=coord) # stable solution
 
+        
     nx.draw(G, pos=coord, with_labels = True)
 
 
@@ -234,6 +250,9 @@ def wordtradegraph():
         
         pos,JSON=makeGraph(tab4graph,pos,weight_flag,flow)
 
+        if pos is None:
+            if JSON is None:
+                return "Graph empty \n Increase the treshold"
         
         resp = Response(response=JSON,
                     status=200,
