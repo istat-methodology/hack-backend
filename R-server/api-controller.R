@@ -16,12 +16,12 @@ library(lmtest)
 #setwd("/home/is2admin/hackathon/git/hack-backend/R-server")
 #setwd("C:\\Users\\ibuku\\git\\hack-backend\\R-server")
 #basedir = ("C:\\Users\\ibuku\\git\\hack-backend\\R-server\\rscript")
-##basedirData=("C:\\Users\\ibuku\\git\\hack-backend\\R-server\\data")
+#basedirData=("C:\\Users\\ibuku\\git\\hack-backend\\R-server\\data")
 basedir = ("/home/is2admin/hackathon/git/hack-backend/R-server/rscript")
 basedirData=("/home/is2admin/hackathon/git/hack-backend/R-server/data")
 FILE_Global_Mobility_Report=paste(basedirData,"Global_Mobility_Report.csv",sep="/")
 FILE_DB_Mobility=paste(basedirData,"DB_GoogleMobility.csv",sep="/")
- 
+
 source(paste(basedir,"MobData_function.R",sep="/"))
 source(paste(basedir,"DescSummary_function.R",sep="/"))
 # PLOT MOBILITY COMPONENTS
@@ -138,8 +138,8 @@ app$add_get(
     print("/policy-indicator")
     resp<-PolInd(.req$get_param_query("region"),.req$get_param_query("subregion"))  
     
-    .res$set_body(toJSON(resp, force = TRUE))
-    
+    .res$set_body( resp)
+    .res$set_content_type("application/json")
  #   .res$set_content_type("text/html")
   })
 

@@ -27,10 +27,13 @@ PolInd <- function( region, subregion) {
                 eig <- get_eig(PCAest)
                 ExpVar <- as.data.frame(eig[2])
                 
+                colnames(ExpVar)<-c("variance_perc")
+                ExpVar<-cbind( "row"=rownames(ExpVar),ExpVar)
+                
                 tab_res<-as.data.frame(res.var[c(1,4,3)])
                 tab_res<-tab_res[c(1,7,13)]
                 #View(tab_res)
-                tab_var<-c("Coordinates","Contributions to the PCs","Quality of representation")
+                tab_var<-c("coordinates","contributions_PCs","quality")
                 colnames(tab_res)<-tab_var
                 
                 #dev.new()
@@ -57,7 +60,7 @@ PolInd <- function( region, subregion) {
                 
                 smoothingSpline = smooth.spline(dates, PolInd, spar=0.35)
                 DPolInd = data.frame(dates,PolInd,smoothingSpline$y)
-                names(DPolInd) <- c('Date', 'PolInd', 'Smooth-PolInd')
+                names(DPolInd) <- c('Date', 'PolInd', 'smooth')
                 
                 
                 db_stat$PolInd <- PolInd
@@ -69,16 +72,17 @@ PolInd <- function( region, subregion) {
                 PolInd_M <- db_stat$PolInd
                 dd <- data.frame(mo, yr, PolInd_M)
                 dfM <- aggregate(PolInd_M ~ mo + yr, dd, FUN = mean)
-                dfM$Date <- as.yearmon(paste(dfM$yr, dfM$mo), "%Y %m")
-                
+               # fra dfM$Date <- as.yearmon(paste(dfM$yr, dfM$mo), "%Y %m")
+                dfM$Date <- as.Date(as.yearmon(paste(dfM$yr, dfM$mo), "%Y %m"))
                 
                 
                 smoothingSpline = smooth.spline(dfM$Date, dfM$PolInd_M, spar=0.35)
                 MPolInd = data.frame(dfM$Date,dfM$PolInd_M,smoothingSpline$y)
-                names(MPolInd) <- c('Date', 'MPolInd', 'Smooth-MPolInd')
+                names(MPolInd) <- c('Date', 'MPolInd', 'smooth')
                 
                 
                 PCAresult<- as.data.frame(tab_res)
+                PCAresult<-cbind( "row"=rownames(PCAresult),PCAresult)
                 
                 reslist <-list("Variance"=ExpVar,"DPM_Index"=DPolInd,
                                "MPM_Index"=MPolInd,"PCAresult"=PCAresult)
