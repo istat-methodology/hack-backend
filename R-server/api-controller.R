@@ -6,12 +6,15 @@ library(plyr)
 library(dplyr)
 library(ggplot2)
 library(sandwich)
-
+library(zoo)
+library(its.analysis)
+library(lmtest)
 # Input che l'utente volendo pu� impostare
 
-#basedir=("C:\\Users\\Barbara\\Documents\\ISTAT\\MEA\\Hacketon\\R-Functions\\Francesco Amato")
+#basedir=("C:\\Users\\ibuku\\git\\hack-backend\\R-server")
 
 setwd("/home/is2admin/hackathon/git/hack-backend/R-server")
+#setwd("C:\\Users\\ibuku\\git\\hack-backend\\R-server")
 basedir = ("./rscript")
 basedirData=("./data")
 FILE_Global_Mobility_Report=paste(basedirData,"Global_Mobility_Report.csv",sep="/")
@@ -31,7 +34,8 @@ source(paste(basedir,"api_data_function.r",sep="/"))
 source(paste(basedir,"api_sa_function.r",sep="/"))
 source(paste(basedir,"api_itsa.r",sep="/"))
 
-
+#region="Italy"
+#subregion="Italy"
 #DescSummRes<-descSummary("Italy","Italy")
 #PlotCompRes<-PlotMobComp("Italy","Italy")
 #Indicator  <-PolInd("Italy","Italy")
@@ -57,7 +61,7 @@ head(GMR)
 COMEXT_IMP<-loadcomext("1")
 COMEXT_EXP<-loadcomext("2")
 
-db <- COMEXT_IMP
+
 app$add_get(
   path = "/load-data", 
   FUN = function(.req, .res) {
@@ -67,13 +71,13 @@ app$add_get(
     .res$set_content_type("application/json")
   })
 
-# http://localhost:5000/desc-summary?region="Italy"&subregion="Italy"
+# http://localhost:5000/desc-summary?region=Italy&subregion=Italy
 app$add_get(
   path = "/desc-summary", 
   FUN = function(.req, .res) {
     print("/desc-summary")
     stats<-descSummary(.req$get_param_query("region"),.req$get_param_query("subregion")) 
-    
+    print("/desc ok")
     .res$set_body(stats)
     
     .res$set_content_type("application/json")
@@ -98,7 +102,7 @@ app$add_get(
   FUN = function(.req, .res) {
     print("/mobility-components")
     resp<-PlotMobComp(.req$get_param_query("region"),.req$get_param_query("subregion"))  
-    print(resp)
+    print("/mobility ok")
     .res$set_body(resp)
     
     .res$set_content_type("application/json")
@@ -119,10 +123,10 @@ app$add_get(
   FUN = function(.req, .res) {
     print("/policy-indicator")
     resp<-PolInd(.req$get_param_query("region"),.req$get_param_query("subregion"))  
-    print(resp)
-    .res$set_body(resp)
     
-    .res$set_content_type("application/json")
+    .res$set_body(toJSON(resp, force = TRUE))
+    
+    .res$set_content_type("text/html")
   })
 
 ###############  FUNZIONI FEDERICO ###################
@@ -153,7 +157,16 @@ app$add_get(
 # CI SONO POI DUE TABELLE STATS E STATST che rappresentano 
 # statistiche descrittive per il periodo pre e dopo la 
 # data di trattamento fissata con year e month
-# http://localhost:5000/api_SummaryBec?flow=2&country="IT"&partner="US"&year=2020&month=3
+
+#flow=2
+#country="IT"
+#partner="US"
+#year=2020
+#month=3
+#VAR=1
+
+
+# http://localhost:5000/bec?flow=2&country=IT&partner=US&year=2020&month=3
 app$add_get(
   path = "/bec", 
   FUN = function(.req, .res) {
@@ -161,7 +174,7 @@ app$add_get(
     resp<-BEC(.req$get_param_query("flow"),.req$get_param_query("country"),
               .req$get_param_query("partner"),.req$get_param_query("year"),
               .req$get_param_query("month")) 
-    print(resp)
+    print("/bec ok")
     .res$set_body(resp)
     
     .res$set_content_type("application/json")
@@ -174,31 +187,34 @@ app$add_get(
 # I PUNTI CON UNA LINEA.
 # CIASCUN DATAFRAME COMPORRA' UN SUBPLOT DI UNA FIGURA UNICA
 #(2,1,"IT","US",2020,2)
-# http://localhost:5000/b_sa_function?flow=2&VAR=1&country=IT&partner=US&year=2020&month=2
+# http://localhost:5000/sa?flow=2&VAR=1&country=IT&partner=US&year=2020&month=2
 app$add_get(
-  path = "/b-sa", 
+  path = "/sa", 
   FUN = function(.req, .res) {
     print("/sa")
     resp<-sa(.req$get_param_query("flow"),.req$get_param_query("var"),
              .req$get_param_query("country"),.req$get_param_query("partner"),
 			 .req$get_param_query("year"),.req$get_param_query("month")) 
-    print(resp)
-    .res$set_body(resp)
     
+    .res$set_body(resp)
+    print("/sa ok")
     .res$set_content_type("application/json")
   })
 
 
+
+# http://localhost:5000/itsa?flow=2&var=1&country=IT&partner=US&fcst=1&fcstpolind=0.1,0.3,0.4
+#http://localhost:5000/itsa?flow=2&var=1&country=IT&partner=US&fcst=2&fcstpolind=0.1,0.3,0.4
 app$add_get(
   path = "/itsa", 
   FUN = function(.req, .res) {
-    print("/sa")
+    print("/itssa")
     resp<-itsa_diag(.req$get_param_query("flow"),.req$get_param_query("var"),
              .req$get_param_query("country"),.req$get_param_query("partner"),
-             .req$get_param_query("fcst"),.req$get_param_query("diag")) 
-    print(resp)
+             .req$get_param_query("fcst"),.req$get_param_query("fcstpolind")) 
+  
     .res$set_body(resp)
-    
+    print("/itsa ok")
     .res$set_content_type("application/json")
   })
 
