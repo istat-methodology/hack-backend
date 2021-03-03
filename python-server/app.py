@@ -5,6 +5,7 @@ import random
 import math
 from networkx.readwrite import json_graph
 import json
+import networkx as nx
 
 DATA_AVAILABLE="data"+os.sep+"dataAvailable"
 SEP=","
@@ -54,13 +55,68 @@ prod_NTSR_dict=prod_NTSR_dict.set_index("AGRICULTURAL PRODUCTS AND LIVE ANIMALS"
 
 
 
-def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges):
-    df_transport_estrazione = df_transport[df_transport["PERIOD"]==tg_period]
+
+#tg_country paese di interesse di cui elimino un edge
+#G_prod = b (Grafo delle importazioni)
+#G_all = G  (Grafo delle importazioni)
+
+def delete_link(G_prod, G_all, tg_country, country_del):
+
+    deg_all = nx.out_degree_centrality(G_all)
+    poss_root = nx.out_degree_centrality(G_prod)
+    roots = { key: value for key, value in poss_root.items() if value == 0.0 }
+    lista_roots = list(roots.keys())
     
-    df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["TRANSPORT_MODE"].isin(listaMezzi)]
+    if country_del in lista_roots:
+        lista_roots.remove(country_del)
+    
+    print("Lista:")
+    print(lista_roots)
+    #print(deg_all)
+    
+    Out_suggestions = {}
+    
+    for r in lista_roots:  
+        print(r)
+        
+        if r in deg_all.keys():        
+            try:
+                path_actual = nx.shortest_path(G_prod, source=tg_country, target=r, weight="value")      
+            except nx.NetworkXNoPath:
+                path_actual ='No actual path'
+                
+            try:
+                path_all = nx.shortest_path(G_all, source=tg_country, target=r, weight="value")
+            except nx.NetworkXNoPath:
+                path_all='No path'
+            
+            Out_suggestions[r]={
+                "num_exportations":deg_all[r],
+                "path_actual": path_actual,
+                "path_all": path_all,
+                }          
+        else:
+            print(r + " not present")
+    
+    return Out_suggestions
+
+#delete_link(G_prod, G, "IT", "DZ")
+
+
+
+
+def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges):
+    df_transport_estrazione=df_transport
+    if tg_period is not None:
+        df_transport_estrazione = df_transport_estrazione[df_transport["PERIOD"]==tg_period]
+
+    if listaMezzi is not None:    
+        df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["TRANSPORT_MODE"].isin(listaMezzi)]
 
     df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["FLOW"]==flow]
-    df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["PRODUCT_NSTR"]==product]
+
+    if product is not None:
+        df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["PRODUCT_NSTR"]==product]
 
     def build_query_mezzi(selezioneMezziEdges):
         listQuery=[]
@@ -78,22 +134,22 @@ def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,
         Query=build_query_mezzi(selezioneMezziEdges)
 
         df_transport_estrazione=df_transport_estrazione.query(Query)
-        print(Query)
-    print(df_transport_estrazione[["TRANSPORT_MODE","DECLARANT_ISO","PARTNER_ISO"]])
-    print(df_transport_estrazione.shape)
+
+
     
     #aggrega
     df_transport_estrazione=df_transport_estrazione.groupby(["DECLARANT_ISO","PARTNER_ISO"]).sum().reset_index()[["DECLARANT_ISO","PARTNER_ISO","VALUE_IN_EUROS","QUANTITY_IN_KG"]]
     df_transport_estrazione=df_transport_estrazione.sort_values(criterio,ascending=False)
 
     #taglio sui nodi
-    SUM = df_transport_estrazione[criterio].sum()     
-    df_transport_estrazione = df_transport_estrazione[df_transport_estrazione[criterio].cumsum(skipna=False)/SUM*100<tg_perc] 
+    if tg_perc is not None:
+        SUM = df_transport_estrazione[criterio].sum()     
+        df_transport_estrazione = df_transport_estrazione[df_transport_estrazione[criterio].cumsum(skipna=False)/SUM*100<tg_perc] 
     
     return df_transport_estrazione
 
-def makeGraph(tab4graph,pos_ini,weight_flag,flow):
-    import networkx as nx
+def makeGraph(tab4graph,pos_ini,weight_flag,flow,AnalisiFlag):
+    
 	
 	
     def calc_metrics(Grafo,FlagWeight): 
@@ -108,16 +164,7 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
             "hubness":nx.betweenness_centrality(Grafo, weight="value")
             }
 
-        '''
-        Metrics={'metriche':{
-            "product spread":nx.density(Grafo),
-            "density":nx.density(Grafo),
-            "vulnerability":dict((k, (1-v)) for k, v in in_deg.items()),
-            "degree_centrality":nx.out_degree_centrality(Grafo),
-            "exportation strenght":nx.out_degree_centrality(Grafo),
-            "hubness":nx.betweenness_centrality(Grafo, weight="value")
-        }}
-        '''
+
         return Metrics 
 	
 	
@@ -163,7 +210,7 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
         coord = nx.spring_layout(G,k=5/math.sqrt(G.order()),pos=coord) # stable solution
         #coord = nx.spring_layout(G,k=5/math.sqrt(G.order()),pos=coord) # stable solution
     except:
-        return None,None
+        return None,None,None
         
 
 
@@ -191,12 +238,18 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
     res2.columns=['from','to']
     res2.reset_index(drop=True, inplace=True)
     dict_edges= res2.T.to_dict().values()
-    new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges),"metriche":MetricG}
+
+
+    if AnalisiFlag==True:
+        Analisi=delete_link(G, G_ALL, "IT", "DZ")
+        new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges),"metriche":MetricG,"Analisi":Analisi}
+    else:
+        new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges),"metriche":MetricG}
 	
     JSON=json.dumps(new_dict) 
 
     
-    return coord,JSON
+    return coord,JSON,G
 
 def jsonpos2coord(jsonpos):
     coord={}
@@ -204,6 +257,16 @@ def jsonpos2coord(jsonpos):
 
         coord[id]=np.array([x,y])
     return coord    
+
+
+
+# CREA GRAFO IMPORT ALL
+tabALL4graph=estrai_tabella_per_grafo(None,None,None,1,None,"VALUE_IN_EUROS",None)
+_,_,G_ALL=makeGraph(tabALL4graph,None,False,1,False)
+print (tabALL4graph.head())
+
+
+
 
 from flask import Flask,request,Response
 from flask_cors import CORS
@@ -259,8 +322,8 @@ def wordtradegraph():
 
         tab4graph=estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges)
 
-        
-        pos,JSON=makeGraph(tab4graph,pos,weight_flag,flow)
+        AnalisiFlag=True
+        pos,JSON,G=makeGraph(tab4graph,pos,weight_flag,flow,AnalisiFlag)
 
         if pos is None:
             if JSON is None:
