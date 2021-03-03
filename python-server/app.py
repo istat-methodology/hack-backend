@@ -70,14 +70,14 @@ def delete_link(G_prod, G_all, tg_country, country_del):
     if country_del in lista_roots:
         lista_roots.remove(country_del)
     
-    print("Lista:")
-    print(lista_roots)
+    #print("Lista:")
+    #print(lista_roots)
     #print(deg_all)
     
     Out_suggestions = {}
     
     for r in lista_roots:  
-        print(r)
+        #print(r)
         
         if r in deg_all.keys():        
             try:
@@ -240,9 +240,14 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow,AnalisiFlag):
     dict_edges= res2.T.to_dict().values()
 
 
-    if AnalisiFlag==True:
-        Analisi=delete_link(G, G_ALL, "IT", "DZ")
-        new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges),"metriche":MetricG,"Analisi":Analisi}
+    if AnalisiFlag is not None:
+        print (AnalisiFlag)
+        if len(AnalisiFlag)==1: #just one connection
+            Analisi=delete_link(G, G_ALL, AnalisiFlag[0]["to"], AnalisiFlag[0]["from"])
+            new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges),"metriche":MetricG,"Analisi":Analisi}
+        else:
+            new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges),"metriche":MetricG}
+            
     else:
         new_dict = { "nodes": list(dict_nodes), "edges": list(dict_edges),"metriche":MetricG}
 	
@@ -262,7 +267,7 @@ def jsonpos2coord(jsonpos):
 
 # CREA GRAFO IMPORT ALL
 tabALL4graph=estrai_tabella_per_grafo(None,None,None,1,None,"VALUE_IN_EUROS",None)
-_,_,G_ALL=makeGraph(tabALL4graph,None,False,1,False)
+_,_,G_ALL=makeGraph(tabALL4graph,None,False,1,None)
 print (tabALL4graph.head())
 
 
@@ -322,7 +327,8 @@ def wordtradegraph():
 
         tab4graph=estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges)
 
-        AnalisiFlag=True
+        AnalisiFlag=selezioneMezziEdges ########################################
+        
         pos,JSON,G=makeGraph(tab4graph,pos,weight_flag,flow,AnalisiFlag)
 
         if pos is None:
