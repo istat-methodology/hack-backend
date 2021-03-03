@@ -70,9 +70,9 @@ def delete_link(G_prod, G_all, tg_country, country_del):
     if country_del in lista_roots:
         lista_roots.remove(country_del)
     
-    #print("Lista:")
-    #print(lista_roots)
-    #print(deg_all)
+    print("Lista:")
+    print(lista_roots)
+    print(deg_all)
     
     Out_suggestions = {}
     
@@ -269,6 +269,8 @@ def jsonpos2coord(jsonpos):
 tabALL4graph=estrai_tabella_per_grafo(None,None,None,1,None,"VALUE_IN_EUROS",None)
 _,_,G_ALL=makeGraph(tabALL4graph,None,False,1,None)
 print (tabALL4graph.head())
+
+print (len(json_graph.node_link_data(G_ALL)["nodes"]))
 
 
 
