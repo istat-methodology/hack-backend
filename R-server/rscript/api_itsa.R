@@ -223,7 +223,7 @@ itsa_diag <- function(flow,VAR,country,partner,fcst,fcstpolind ){
   
   var<-c("Yearly variation","Monthly Covid effect","Cumulative Covid effect")
   rownames(stats_tpolind)<-var
-  colnames(stats_tpolind)<-paste("T+",1:n,sep="")
+  colnames(stats_tpolind)<-paste("T",1:n,sep="")
   #View(stats_tpolind)
   
   rm(a,b)
@@ -363,23 +363,26 @@ itsa_diag <- function(flow,VAR,country,partner,fcst,fcstpolind ){
    rownames(regmod)[rownames(regmod) == "d"] <- "Covid Dummy"
    rownames(regmod)[rownames(regmod) == "polind"] <- "Mobility Policy Indicator"
    
+   regmod<-cbind( "row"=rownames(regmod),regmod)
+   colnames(regmod)<-c("row","estimate", "std_error", "t_value","pr_t")
+   
    # Covid Effect (mln. of Euro)
    coveff <- as.data.frame(stats_tpolind)
-   names(coveff)[names(coveff) == "T+1"] <- "Mar-2020"
-   names(coveff)[names(coveff) == "T+2"] <- "Apr-2020"
-   names(coveff)[names(coveff) == "T+3"] <- "May-2020"
-   names(coveff)[names(coveff) == "T+4"] <- "Jun-2020"
-   names(coveff)[names(coveff) == "T+5"] <- "Jul-2020"
-   names(coveff)[names(coveff) == "T+6"] <- "Aug-2020"
-   names(coveff)[names(coveff) == "T+7"] <- "Sep-2020"
-   names(coveff)[names(coveff) == "T+8"] <- "Opt-2020"
-   names(coveff)[names(coveff) == "T+9"] <- "Nov-2020"
+   names(coveff)[names(coveff) == "T1"] <- "Mar_2020"
+   names(coveff)[names(coveff) == "T2"] <- "Apr_2020"
+   names(coveff)[names(coveff) == "T3"] <- "May_2020"
+   names(coveff)[names(coveff) == "T4"] <- "Jun_2020"
+   names(coveff)[names(coveff) == "T5"] <- "Jul_2020"
+   names(coveff)[names(coveff) == "T6"] <- "Aug_2020"
+   names(coveff)[names(coveff) == "T7"] <- "Sep_2020"
+   names(coveff)[names(coveff) == "T8"] <- "Opt_2020"
+   names(coveff)[names(coveff) == "T9"] <- "Nov_2020"
    
+   coveff<-cbind( "row"=rownames(coveff),coveff)
 
-
-   reslist <-list("Estimated Model Parameters"=regmod,"Covid Effect Estimation"=coveff,
-                  "T+1"=djson1,"T+2"=djson2,"T+3"=djson3,"T+4"=djson4,"T+5"=djson5,
-                  "T+6"=djson6,"T+7"=djson7,"T+8"=djson8,"T+9"=djson9,"Forecast"=djsonfcst)
+   reslist <-list("Model"=regmod,"Covid_Estimation"=coveff,
+                  "T1"=djson1,"T2"=djson2,"T3"=djson3,"T4"=djson4,"T5"=djson5,
+                  "T6"=djson6,"T7"=djson7,"T8"=djson8,"T9"=djson9,"Forecast"=djsonfcst)
    
    #rm(ris)
   return(reslist)    

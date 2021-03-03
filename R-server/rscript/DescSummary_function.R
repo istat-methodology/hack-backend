@@ -10,7 +10,8 @@ descSummary <- function(region, subregion) {
   gmr<-subset(GMR,Country==region)
   gmr<-as.data.frame(gmr)
   gmr$Region<-ifelse(gmr$Region=="",region,gmr$Region)
-  var<-c("Dates","Retail","Grocery_Pharmacy","Parks","Transit_Station","Workplaces","Residential")
+ # var<-c("Dates","Retail","Grocery_Pharmacy","Parks","Transit_Station","Workplaces","Residential")
+  var<-c("Dates","Retail","Pharmacy","Parks","Station","Workplaces","Residential")
   db_stat<-gmr[(gmr$Region==subregion),]
   db_stat<-db_stat[,4:10]
   db_stat[is.na(db_stat)]<-0
@@ -34,9 +35,11 @@ descSummary <- function(region, subregion) {
   stats<-do.call("rbind", ris)
   stats<-t(stats)
   colnames(stats)<-paste(subregion, var[2:7],sep =" ")
+  colnames(stats)<- var[2:7]
  # View(stats)
   
   stats<- as.data.frame(stats)
+  stats<-cbind( "row"=rownames(stats),stats)
   return(stats)
   }
   

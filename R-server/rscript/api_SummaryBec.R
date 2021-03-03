@@ -114,21 +114,23 @@ BEC <- function(flow,country,partner,year,month){
   
   stats<-do.call("rbind", ris)
   stats<-t(stats)
-  colnames(stats)<-c("FOOD AND BEVERAGES","INDUSTRIAL SUPPLIES","FUELS AND LUBRICANTS",
-                     "CAPITAL GOODS","TRANSPORT EQUIPMENT","CONSUMER GOODS")
+  colnames(stats)<-c("FOOD_AND_BEVERAGES","INDUSTRIAL_SUPPLIES","FUELS_AND_LUBRICANTS",
+                     "CAPITAL_GOODS","TRANSPORT_EQUIPMENT","CONSUMER_GOODS")
   
   statsT<-do.call("rbind", risT)
   statsT<-t(statsT)
-  colnames(statsT)<-c("FOOD AND BEVERAGES","INDUSTRIAL SUPPLIES","FUELS AND LUBRICANTS",
-                      "CAPITAL GOODS","TRANSPORT EQUIPMENT","CONSUMER GOODS")
+  colnames(statsT)<-c("FOOD_AND_BEVERAGES","INDUSTRIAL_SUPPLIES","FUELS_AND_LUBRICANTS",
+                      "CAPITAL_GOODS","TRANSPORT_EQUIPMENT","CONSUMER_GOODS")
   
   stats<- as.data.frame(stats)
   statsT<- as.data.frame(statsT)
+  stats<-cbind( "row"=rownames(stats),stats)
+  statsT<-cbind( "row"=rownames(statsT),statsT)
   
-  colnames(d)<-c("DATES","FOOD AND BEVERAGES","INDUSTRIAL SUPPLIES","FUELS AND LUBRICANTS",
-                      "CAPITAL GOODS","TRANSPORT EQUIPMENT","CONSUMER GOODS")
+  colnames(d)<-c("FOOD_AND_BEVERAGES","INDUSTRIAL_SUPPLIES","FUELS_AND_LUBRICANTS",
+                 "CAPITAL_GOODS","TRANSPORT_EQUIPMENT","CONSUMER_GOODS")
   
-  reslist <-list("Statistics Pre Reference Date"=stats,"Statistics Post Reference Date"=statsT,
+  reslist <-list("Pre_Date"=stats,"Post_Date"=statsT,
                  "Plots"=d)
   
   return(reslist)

@@ -34,10 +34,10 @@ dati$tend[c(1:12)]<-NA
 dfor   <- data.frame(date,dati$VAR)
 names(dfor) <- c('Date','Line')
 dftend <- data.frame(date,dati$tend)
-names(dftend) <- c('Date','Scatter + Line')
+names(dftend) <- c('Date','Scatter_Line')
 
 
-reslist <-list("Raw Series"=dfor,"Yearly Variation"=dftend)
+reslist <-list("Raw_Series"=dfor,"Yearly_Variation"=dftend)
 
 
 

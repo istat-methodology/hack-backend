@@ -13,8 +13,10 @@ library(lmtest)
 
 #basedir=("C:\\Users\\ibuku\\git\\hack-backend\\R-server")
 
-setwd("/home/is2admin/hackathon/git/hack-backend/R-server")
+#setwd("/home/is2admin/hackathon/git/hack-backend/R-server")
 #setwd("C:\\Users\\ibuku\\git\\hack-backend\\R-server")
+#basedir = ("C:\\Users\\ibuku\\git\\hack-backend\\R-server\\rscript")
+#basedirData=("C:\\Users\\ibuku\\git\\hack-backend\\R-server\\data")
 basedir = ("/home/is2admin/hackathon/git/hack-backend/R-server/rscript")
 basedirData=("/home/is2admin/hackathon/git/hack-backend/R-server/data")
 FILE_Global_Mobility_Report=paste(basedirData,"Global_Mobility_Report.csv",sep="/")
@@ -78,10 +80,22 @@ app$add_get(
     print("/desc-summary")
     stats<-descSummary(.req$get_param_query("region"),.req$get_param_query("subregion")) 
     print("/desc ok")
-    .res$set_body(stats)
+    .res$set_body(toJSON(stats))
     
-    .res$set_content_type("application/json")
+  #  .res$set_content_type("text/html")
   })
+
+app$add_get(
+  path = "/desc-summary-j", 
+  FUN = function(.req, .res) {
+    print("/desc-summary-j")
+    stats<-descSummary(.req$get_param_query("region"),.req$get_param_query("subregion")) 
+    print("/desc ok")
+    .res$set_body(stats)
+   
+.res$set_content_type("application/json")
+  })
+
 
 # PLOT MOBILITY COMPONENTS
 # DA FARE CON L'OUTPUT
@@ -126,7 +140,7 @@ app$add_get(
     
     .res$set_body(toJSON(resp, force = TRUE))
     
-    .res$set_content_type("text/html")
+ #   .res$set_content_type("text/html")
   })
 
 ###############  FUNZIONI FEDERICO ###################
@@ -188,6 +202,9 @@ app$add_get(
 # CIASCUN DATAFRAME COMPORRA' UN SUBPLOT DI UNA FIGURA UNICA
 #(2,1,"IT","US",2020,2)
 # http://localhost:5000/sa?flow=2&VAR=1&country=IT&partner=US&year=2020&month=2
+
+#SARES <- sa(2,1,"IT","US",2020,2)
+
 app$add_get(
   path = "/sa", 
   FUN = function(.req, .res) {
@@ -201,7 +218,7 @@ app$add_get(
     .res$set_content_type("application/json")
   })
 
-
+#ITSA  <- itsa_diag(1,3,"IT","WO",1,1) 
 
 # http://localhost:5000/itsa?flow=2&var=1&country=IT&partner=US&fcst=1&fcstpolind=0.1,0.3,0.4
 #http://localhost:5000/itsa?flow=2&var=1&country=IT&partner=US&fcst=2&fcstpolind=0.1,0.3,0.4
