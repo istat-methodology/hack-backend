@@ -34,7 +34,6 @@ loadData <- function(){
   }
 
   GMR <- read.csv(FILE_DB_Mobility)
-  GMR$date<-as.factor(GMR$date)
   print("loading data file ok!")
   return (GMR)
 }

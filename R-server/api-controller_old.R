@@ -1,22 +1,21 @@
-library(RestRserve)
-library(jsonlite)
-library(data.table)
-library(factoextra)
-library(plyr) 
-library(dplyr)
-library(ggplot2)
-library(sandwich)
+library("RestRserve")
+library("jsonlite")
+library("data.table")
+library("factoextra")
+library("plyr") 
+library("dplyr")
+library("ggplot2")
 
-# Input che l'utente volendo pu� impostare
+# Input che l'utente volendo puï¿½ impostare
 
-#basedir=("C:\\Users\\Barbara\\Documents\\ISTAT\\MEA\\Hacketon\\R-Functions\\Francesco Amato")
 
-setwd("/home/is2admin/hackathon/git/hack-backend/R-server")
 basedir = ("./rscript")
 basedirData=("./data")
 FILE_Global_Mobility_Report=paste(basedirData,"Global_Mobility_Report.csv",sep="/")
 FILE_DB_Mobility=paste(basedirData,"DB_GoogleMobility.csv",sep="/")
+FILE_COUNTRY=paste(basedirData,"country.json",sep="/")
 
+source(paste(basedir,"apps_functions.R",sep="/"))
 source(paste(basedir,"MobData_function.R",sep="/"))
 source(paste(basedir,"DescSummary_function.R",sep="/"))
 # PLOT MOBILITY COMPONENTS
@@ -25,39 +24,22 @@ source(paste(basedir,"PlotMobComp_function.R",sep="/"))
 # POLICY INDICATOR
 # CARICO LA SOURCE
 source(paste(basedir,"PolicyIndicator_function.R",sep="/"))
-source(paste(basedir,"api_SummaryBec.R",sep="/"))
-source(paste(basedir,"api_loadcomext_function.R",sep="/"))
-source(paste(basedir,"api_data_function.r",sep="/"))
-source(paste(basedir,"api_sa_function.r",sep="/"))
-source(paste(basedir,"api_itsa.r",sep="/"))
-
-
-#DescSummRes<-descSummary("Italy","Italy")
-#PlotCompRes<-PlotMobComp("Italy","Italy")
-#Indicator  <-PolInd("Italy","Italy")
-
-
-#ResBEC   <- BEC(2,"IT","US",2020,2) 
-# PARAM 2 - BEC - SPECIFICO O TOTALE
-#SARES <- sa(2,1,"IT","US",2020,2)
-
-#ITSA  <- itsa_diag(1,3,"IT","WO",1,1) 
-
+source(paste(basedir,"b_bec_function.R",sep="/"))
+source(paste(basedir,"b_sa_function.r",sep="/"))
+source(paste(basedir,"b_loadcomext_function.r",sep="/"))
+ 
 
 ##
 ## altri caricamenti fi funzioni
 ## source(".. ")
 ##
 app = Application$new()
-
-#db <- NULL
+COUNTRIES<-loadCountries()
 GMR<-loadData()
-head(GMR)
-
 COMEXT_IMP<-loadcomext("1")
 COMEXT_EXP<-loadcomext("2")
-
-db <- COMEXT_IMP
+head(GMR)
+ 
 app$add_get(
   path = "/load-data", 
   FUN = function(.req, .res) {
@@ -67,16 +49,15 @@ app$add_get(
     .res$set_content_type("application/json")
   })
 
-# http://localhost:5000/desc-summary?region="Italy"&subregion="Italy"
 app$add_get(
   path = "/desc-summary", 
   FUN = function(.req, .res) {
     print("/desc-summary")
     stats<-descSummary(.req$get_param_query("region"),.req$get_param_query("subregion")) 
-    
-    .res$set_body(stats)
-    
-    .res$set_content_type("application/json")
+     
+   .res$set_body(stats)
+   
+   .res$set_content_type("application/json")
   })
 
 # PLOT MOBILITY COMPONENTS
@@ -84,7 +65,7 @@ app$add_get(
 # Da questa funzione esce un oggetto contenente 6 data-frame uguali in ciascuno sono 
 # contenuti 3 vettori: Date: le date (asse x), Value (i valori della serie da plottare come
 # linee che partono dallo zero fino al punto indicato), Smooth(y di una linea rossa leggermente
-# pi� spessa) - I 6 grafici avranno i seguenti nomi:
+# piï¿½ spessa) - I 6 grafici avranno i seguenti nomi:
 # Frame 1: Region (parametro dinamico) Retail
 # Frame 2: Region (parametro dinamico) Grocery and Pharmacy 
 # Frame 3: Region (parametro dinamico) Parks
@@ -92,7 +73,7 @@ app$add_get(
 # Frame 5: Region (parametro dinamico) Workplaces
 # Frame 6: Region (parametro dinamico) Residential
 
-# http://localhost:5000/mobility-components?region="Italy"&subregion="Italy"
+
 app$add_get(
   path = "/mobility-components", 
   FUN = function(.req, .res) {
@@ -108,12 +89,13 @@ app$add_get(
 # Da qui otteniamo un oggetto con 4 dataframe
 # 1- PCAresult --> da rappresentare in una tabella (questi dati sono alla base del plot con
 # le coordinate figura 1)
-# 2 -  ExpVar --> Variance Explained da rappresentare con un Scree Plot: un istogramma
-#linea nera che unisce i punti centrali di ogni istogramma vedi figura 2
+# 2 -  ExpVar --> Variance Explained da rapprese
+ntare con un Scree Plot: un istogramma
+      #linea nera che unisce i punti centrali di ogni istogramma vedi figura 2
 # 3 - DPolInd,MPolInd -> Indicatore di policy giornaliero e mensile da trattare come i
 # dati del file precedente (componenti) - figure 3 e 4
 
-# http://localhost:5000/policy-indicator?region="Italy"&subregion="Italy"
+
 app$add_get(
   path = "/policy-indicator", 
   FUN = function(.req, .res) {
@@ -129,38 +111,27 @@ app$add_get(
 ### CARICAMENTO DATI COMMERCIO ESTERO (I DATI AL MOMENTO
 ### SONO DIVISI TRA IMPORT ED EXPORT VERIFICARE SUCCESSIVAMENTE LA
 ### BASE DATI DEFINITIVA)
-
 app$add_get(
   path = "/load-comext", 
   FUN = function(.req, .res) {
+    
     COMEXT_IMP<-loadcomext("1")
     COMEXT_EXP<-loadcomext("2")
-    #db<-loadcomext(.req$get_param_query("flow"))
+    
     .res$set_body("Load data ok")
     .res$set_content_type("application/json")
   })
 
 
-# OUTPUT: 6 DATA FRAME - CON CIASCUNO VA COMPOSTO UN SUBPLOT
-# IL CUI NOME DINAMICO E' COMPOSTO DA:
-# TITOLO: "Flow sigla country- sigla partner, nome del bec % tot"
-# Per i parametri vedi legenda. Per country e partner usa le stesse sigle che
-# ha dato fabrizio a 2 cifre
-# CIASCUN DATA FRAME SI COMPONE DI TRE COLONNE
-# DATES - > X
-# SCATTER CHART -> Y-GRAFICO SCATTER (VERDE)
-# Line -> Line  Y-GRAFICO LINE (ROSSO)
-# CI SONO POI DUE TABELLE STATS E STATST che rappresentano 
-# statistiche descrittive per il periodo pre e dopo la 
-# data di trattamento fissata con year e month
-# http://localhost:5000/api_SummaryBec?flow=2&country="IT"&partner="US"&year=2020&month=3
+# IN QUESTO CASO RESTITUISCE IL FILE IN JSON CON LA TABELLA DOVRA' ESSERE DISEGNATO
+# NELLA LISTA OLTRE AI SEI DATAFRAME DI DATI RESTITUTISCO DUE VARIABILI
+# INDICATIVE DEL TIPO DI GRAFICO (TP1=SCATTER PLOT) E  TP2=LINE.
 app$add_get(
-  path = "/bec", 
+  path = "/b_bec_function", 
   FUN = function(.req, .res) {
-    print("/bec")
-    resp<-BEC(.req$get_param_query("flow"),.req$get_param_query("country"),
-              .req$get_param_query("partner"),.req$get_param_query("year"),
-              .req$get_param_query("month")) 
+    print("/BEC")
+    resp<-BEC(.req$get_param_query("flow"),.req$get_param_query("var"),
+                      .req$get_param_query("country"),.req$get_param_query("partner")) 
     print(resp)
     .res$set_body(resp)
     
@@ -168,41 +139,47 @@ app$add_get(
   })
 
 
-# L'OUTPUT DI QUESTA FUNZIONE SONO DUE DATAFRAME CONTENENTI:
-# DATE - ASSE X
-# VETTORE DI VALORI DA RAPPRESENTARE PRIMA COME SCATTER E POI UNIRE 
-# I PUNTI CON UNA LINEA.
-# CIASCUN DATAFRAME COMPORRA' UN SUBPLOT DI UNA FIGURA UNICA
-#(2,1,"IT","US",2020,2)
-# http://localhost:5000/b_sa_function?flow=2&VAR=1&country=IT&partner=US&year=2020&month=2
 app$add_get(
-  path = "/b-sa", 
+  path = "/b_sa_function", 
   FUN = function(.req, .res) {
     print("/sa")
     resp<-sa(.req$get_param_query("flow"),.req$get_param_query("var"),
-             .req$get_param_query("country"),.req$get_param_query("partner"),
-			 .req$get_param_query("year"),.req$get_param_query("month")) 
+              .req$get_param_query("country"),.req$get_param_query("partner")) 
     print(resp)
     .res$set_body(resp)
     
     .res$set_content_type("application/json")
   })
+
 
 
 app$add_get(
-  path = "/itsa", 
+  path = "/countries", 
   FUN = function(.req, .res) {
-    print("/sa")
-    resp<-itsa_diag(.req$get_param_query("flow"),.req$get_param_query("var"),
-             .req$get_param_query("country"),.req$get_param_query("partner"),
-             .req$get_param_query("fcst"),.req$get_param_query("diag")) 
-    print(resp)
-    .res$set_body(resp)
-    
-    .res$set_content_type("application/json")
+   resp<-countries(.req$get_param_query("country"),.req$get_param_query("name"))  
+   .res$set_body(resp)
+ 
   })
+
+
+##
+## esempio funzionamento RestRserve
+##
+app$add_get(
+  path = "/health", 
+  FUN = function(.req, .res) {
+    .res$set_body("OK")
+  })
+
+app$add_post(
+  path = "/addone", 
+  FUN = function(.req, .res) {
+    result = list(x = .req$body$x + 1L)
+    .res$set_content_type("application/json")
+    .res$set_body(result)
+  })
+
 
 backend = BackendRserve$new()
 backend$start(app, http_port = 5000)
-
 
