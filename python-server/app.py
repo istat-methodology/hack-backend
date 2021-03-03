@@ -114,16 +114,16 @@ def delete_link(G_prod, G_all, country_del,tg_country):
 
 
 
-def delete_link(G_prod, G_all, country_del, tg_country):
+def delete_link(G_prod, G_all, tg_country,country_del):
 
     deg_all = nx.out_degree_centrality(G_all)
     poss_root = nx.out_degree_centrality(G_prod)
     roots = { key: value for key, value in poss_root.items() if value == 0.0 }
     lista_roots = list(roots.keys())
     
-    if country_del in lista_roots:
-        lista_roots.remove(country_del)
-    #lista_roots=list(set(lista_roots).difference(set([country_del])))
+    #if country_del in lista_roots:
+    #    lista_roots.remove(country_del)
+    lista_roots=list(set(lista_roots).difference(set([country_del])))
     
     print("Lista:")
     print("lista_roots:")
@@ -220,7 +220,7 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow,AnalisiFlag):
             "vulnerability":dict((k, (1-v)) for k, v in in_deg.items()),
             "degree_centrality":nx.out_degree_centrality(Grafo),
             "exportation strenght":nx.out_degree_centrality(Grafo),
-            "hubness":nx.betweenness_centrality(Grafo, weight="value")
+            "hubness":nx.betweenness_centrality(Grafo)#, weight="value")
             }
 
 
