@@ -98,7 +98,13 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
 	
     def calc_metrics(Grafo,FlagWeight): 
         in_deg = nx.in_degree_centrality(Grafo)
-            
+
+        Metrics={
+            "degree_centrality":nx.degree_centrality(Grafo),
+            "density":nx.density(Grafo)
+            }
+
+        '''
         Metrics={'metriche':{
             "product spread":nx.density(Grafo),
             "density":nx.density(Grafo),
@@ -107,6 +113,7 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
             "exportation strenght":nx.out_degree_centrality(Grafo),
             "hubness":nx.betweenness_centrality(Grafo, weight="value")
         }}
+        '''
         return Metrics 
 	
 	
