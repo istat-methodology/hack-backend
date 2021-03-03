@@ -27,6 +27,7 @@ def load_files_available():
                 df=pd.read_csv(DATA_AVAILABLE+os.sep+f,sep=SEP)
                 
                 print ("\t","shape",df.shape)
+                break
                 continue
             appo=pd.read_csv(DATA_AVAILABLE+os.sep+f,sep=SEP)        
             print ("\t","shape",appo.shape)
@@ -61,13 +62,13 @@ def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,
 
     def build_query_mezzi(selezioneMezziEdges):
         listQuery=[]
-        for edge in selezioneMezziEdges['edgesSelected']:
+        for edge in selezioneMezziEdges:#['edgesSelected']:
             print("@@@@@@@@@@@",edge)
             From=edge["from"]
             To=edge["to"]
-            exclude=edge["exclude"]
-            print (edge,From,To,exclude)    
-            listQuery.append("(DECLARANT_ISO == '"+From+"' & PARTNER_ISO == '"+To+"' & TRANSPORT_MODE in ["+exclude+"])")
+            exclude=str(edge["exclude"])
+            print (type(edge),type(From),type(To),type(exclude))    
+            listQuery.append("(DECLARANT_ISO == '"+From+"' & PARTNER_ISO == '"+To+"' & TRANSPORT_MODE in "+exclude+")")
         return "not ("+("|".join(listQuery))+")"    
     if (selezioneMezziEdges is not None):
         Query=build_query_mezzi(selezioneMezziEdges)
@@ -223,6 +224,7 @@ def wordtradegraph():
         else:
             pass
             print(selezioneMezziEdges)
+            print(type(selezioneMezziEdges))
         #--------------------
         
         
