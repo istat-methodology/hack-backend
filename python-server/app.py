@@ -119,10 +119,10 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow):
         edges=[ (i,j,1) for i,j,w in tab4graph.loc[:,[country_from,country_to,weight]].values]
         #G.add_edge(i,j)
     G.add_weighted_edges_from(edges)
-        
-    MetricG=calc_metrics(G,weight_flag)    
-	
-		
+    MetricG=calc_metrics(G,weight_flag)	
+    f=open ("Erika.pkl","wb")
+    pickle.dump(f,G)
+    f.close()
     GG=json_graph.node_link_data(G)
     Nodes=GG["nodes"]
     Links=GG["links"] 
