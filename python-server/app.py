@@ -7,6 +7,8 @@ from networkx.readwrite import json_graph
 import json
 import networkx as nx
 
+
+
 DATA_AVAILABLE="data"+os.sep+"dataAvailable"
 SEP=","
 DATA_EXTENTION=".dat"
@@ -15,6 +17,8 @@ NTSR_PROD_FILE="data"+os.sep+"NSTR.txt"
 
 def data_extraction(date):   
     return date[TIME_FTM[0]:TIME_FTM[1]]
+
+
 
 def load_files_available(): 
     # reads DATA_AVAILABLE dir
@@ -28,20 +32,56 @@ def load_files_available():
                 df=pd.read_csv(DATA_AVAILABLE+os.sep+f,sep=SEP)
                 
                 print ("\t","shape",df.shape)
-                break
                 continue
             appo=pd.read_csv(DATA_AVAILABLE+os.sep+f,sep=SEP)        
             print ("\t","shape",appo.shape)
             df=df.append(appo)
             
-    df=df[df["PRODUCT_NSTR"]!="TOT"]
-    df=df[df["DECLARANT_ISO"]!="EU"]
-    df=df[df["PARTNER_ISO"]!="EU"]
+            df=df[df["PRODUCT_NSTR"]!="TOT"]
+            df=df[df["DECLARANT_ISO"]!="EU"]
+            df=df[df["PARTNER_ISO"]!="EU"]
             
             
     return df
 
 df_transport = load_files_available()      
+
+
+
+
+
+def load_COMEXPLUS(): 
+    print("COMEX-PLUS loading...")
+    df_ITGS_plus=pd.read_csv("data/stima_comext_ITGS_201901_202012..csv",sep=",")
+
+    df_ITGS_plus.head()
+    df_ITGS_plus["product_NC"]=df_ITGS_plus["product_NC"].astype(str)
+
+    df_CN=pd.read_csv("data/CN.txt",sep="\t")
+    print(df_CN.info())
+
+
+    df_CN.columns=["00","01","02","03","04","05","06"]
+
+
+    #["product_NC"]#.apply(lambda x: CNcod2Prod[int(x)])
+    #df_CN.set_index("00")
+    #df_ITGS_plus
+    df_ITGS_plus.columns=["PRODUCT_NC","DECLARANT_ISO","consign","PARTNER_ISO","FLOW","PERIOD","TRANSPORT_MODE","VALUE_IN_EUROS"]
+    #df_ITGS_plus.to_csv("save.csv",sep=",")
+    df_ITGS_plus["PRODUCT_NC"]=df_ITGS_plus["PRODUCT_NC"].astype("str")
+
+    df=pd.merge(df_ITGS_plus,df_CN,left_on="PRODUCT_NC",right_on="00")[["PRODUCT_NC","04","DECLARANT_ISO","consign","PARTNER_ISO","FLOW","PERIOD","TRANSPORT_MODE","VALUE_IN_EUROS"]]
+
+            
+    df=df[df["PRODUCT_NC"]!="TOT"]
+    df=df[df["DECLARANT_ISO"]!="EU"]
+    df=df[df["PARTNER_ISO"]!="EU"]
+    df[["PRODUCT_NC","04"]].drop_duplicates().to_csv("COMEXPLUS_PROD.csv",index=False)        
+            
+    return df
+
+df_transportCOMEXPLUS = load_COMEXPLUS()      
 
 
 #build dict mapping NTSR prod and viceversa
@@ -62,9 +102,7 @@ prod_NTSR_dict=prod_NTSR_dict.set_index("AGRICULTURAL PRODUCTS AND LIVE ANIMALS"
 
 
 
-
-
-def delete_link(G_prod, G_all, country_del,tg_country):
+def delete_link(G_prod, G_all, tg_country, country_del):
 
     deg_all = nx.out_degree_centrality(G_all)
     poss_root = nx.out_degree_centrality(G_prod)
@@ -73,7 +111,6 @@ def delete_link(G_prod, G_all, country_del,tg_country):
     
     if country_del in lista_roots:
         lista_roots.remove(country_del)
-    #lista_roots=list(set(lista_roots).difference(set([country_del])))
     
     print("Lista:")
     print(lista_roots)
@@ -108,66 +145,14 @@ def delete_link(G_prod, G_all, country_del,tg_country):
 
 
 
+def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges,DS_COMEX):
+    if (DS_COMEX==True):
+        df_transport_estrazione=df_transport
+    else:
+        df_transport_estrazione=df_transportCOMEXPLUS
 
-
-
-
-
-
-def delete_link(G_prod, G_all, tg_country,country_del):
-
-    deg_all = nx.out_degree_centrality(G_all)
-    poss_root = nx.out_degree_centrality(G_prod)
-    roots = { key: value for key, value in poss_root.items() if value == 0.0 }
-    lista_roots = list(roots.keys())
-    
-    #if country_del in lista_roots:
-    #    lista_roots.remove(country_del)
-    lista_roots=list(set(lista_roots).difference(set([country_del])))
-    
-    print("Lista:")
-    print("lista_roots:")
-    print(lista_roots)
-    print("deg_all:")
-    print(deg_all)
-    
-    Out_suggestions = {}
-    
-    for r in lista_roots:  
-        print(r)
-        
-        if r in deg_all.keys():
-            #print (deg_all.keys())
-            print("---------",deg_all[r])
-            try:
-                path_actual = nx.shortest_path(G_prod, source=tg_country, target=r)#, weight="value")      
-            except nx.NetworkXNoPath:
-                path_actual ='No actual path'
-                
-            try:
-                path_all = nx.shortest_path(G_all, source=tg_country, target=r)#, weight="value")
-            except nx.NetworkXNoPath:
-                path_all='No path'
-            
-            Out_suggestions[r]={
-                "num_exportations":deg_all[r],
-                "path_actual": path_actual,
-                "path_all": path_all,
-                }          
-        else:
-            print(r + " not present")
-    
-    return Out_suggestions
-
-#delete_link(G_prod, G, "IT", "DZ")
-
-
-
-
-def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges):
-    df_transport_estrazione=df_transport
     if tg_period is not None:
-        df_transport_estrazione = df_transport_estrazione[df_transport["PERIOD"]==tg_period]
+        df_transport_estrazione = df_transport_estrazione[df_transport_estrazione["PERIOD"]==tg_period]
 
     if listaMezzi is not None:    
         df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["TRANSPORT_MODE"].isin(listaMezzi)]
@@ -175,8 +160,10 @@ def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,
     df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["FLOW"]==flow]
 
     if product is not None:
-        df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["PRODUCT_NSTR"]==product]
-
+        if (DS_COMEX==True):
+            df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["PRODUCT_NSTR"]==product]
+        else:
+            df_transport_estrazione=df_transport_estrazione[df_transport_estrazione["PRODUCT_NC"]==product]
     def build_query_mezzi(selezioneMezziEdges):
         listQuery=[]
         for edge in selezioneMezziEdges:#['edgesSelected']:
@@ -197,7 +184,11 @@ def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,
 
     
     #aggrega
-    df_transport_estrazione=df_transport_estrazione.groupby(["DECLARANT_ISO","PARTNER_ISO"]).sum().reset_index()[["DECLARANT_ISO","PARTNER_ISO","VALUE_IN_EUROS","QUANTITY_IN_KG"]]
+    if (DS_COMEX==True):
+        df_transport_estrazione=df_transport_estrazione.groupby(["DECLARANT_ISO","PARTNER_ISO"]).sum().reset_index()[["DECLARANT_ISO","PARTNER_ISO","VALUE_IN_EUROS","QUANTITY_IN_KG"]]
+    else:
+        df_transport_estrazione=df_transport_estrazione.groupby(["DECLARANT_ISO","PARTNER_ISO"]).sum().reset_index()[["DECLARANT_ISO","PARTNER_ISO","VALUE_IN_EUROS"]]
+
     df_transport_estrazione=df_transport_estrazione.sort_values(criterio,ascending=False)
 
     #taglio sui nodi
@@ -209,8 +200,7 @@ def estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,
 
 def makeGraph(tab4graph,pos_ini,weight_flag,flow,AnalisiFlag):
     
-	
-	
+
     def calc_metrics(Grafo,FlagWeight): 
         in_deg = nx.in_degree_centrality(Grafo)
 
@@ -225,8 +215,7 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow,AnalisiFlag):
 
 
         return Metrics 
-	
-	
+
     G = nx.DiGraph()
     if flow==1:
         print("import")
@@ -247,7 +236,7 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow,AnalisiFlag):
         #G.add_edge(i,j)
     G.add_weighted_edges_from(edges)
     MetricG=calc_metrics(G,weight_flag)	
-	
+
     import pickle
     with open ("G_dump.pkl","wb") as f:
         pickle.dump(G,f)
@@ -325,7 +314,7 @@ def jsonpos2coord(jsonpos):
 
 
 # CREA GRAFO IMPORT ALL
-tabALL4graph=estrai_tabella_per_grafo(None,None,None,1,None,"VALUE_IN_EUROS",None)
+tabALL4graph=estrai_tabella_per_grafo(None,None,None,1,None,"VALUE_IN_EUROS",None,True)
 _,_,G_ALL=makeGraph(tabALL4graph,None,False,1,None)
 print (tabALL4graph.head())
 
@@ -346,6 +335,7 @@ CORS(app, resources=r'/*')
         
 @app.route('/wordtradegraph', methods=['POST','GET'])
 def wordtradegraph():
+    DS_COMEX=True
     if request.method == 'POST':
         
         print ("Word Trade Graph method get ....")
@@ -386,7 +376,7 @@ def wordtradegraph():
         
         
 
-        tab4graph=estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges)
+        tab4graph=estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges,DS_COMEX)
 
         AnalisiFlag=selezioneMezziEdges ########################################
         
@@ -405,6 +395,78 @@ def wordtradegraph():
     else:
         return str("only post")
 
+    
+    
+    
+    
+@app.route('/wordtradegraphplus', methods=['POST','GET'])
+def wordtradegraphplus():
+    DS_COMEX=False
+    if request.method == 'POST':
+        
+        print ("Word Trade Graph method get ....")
+        criterio="VALUE_IN_EUROS" #VALUE_IN_EUROS 	QUANTITY_IN_KG
+
+        jReq=dict(request.json)
+
+        tg_perc=int(jReq['tg_perc'])
+        tg_period=int(jReq['tg_period'])
+
+        pos=jReq['pos']
+        if pos=="None":
+            pos=None
+        else:
+            print ("pos-----",pos)
+            print ("pos-----",type(pos))
+            
+            pos=jsonpos2coord(pos)
+
+        #0:Unknown 1:Sea 2:Rail 3:Road 4Air 5:Post 7:Fixed Mechanism 8:Inland Waterway 9:Self Propulsion
+        #listaMezzi=map(int,(jReq['listaMezzi']).split(","))#[0,1,2,3,4,5,7,8,9] 
+        listaMezzi=jReq['listaMezzi']#[0,1,2,3,4,5,7,8,9] 
+        
+        flow=int(jReq['flow'])
+        
+        product=str(jReq['product'])
+        
+        weight_flag=bool(jReq['weight_flag'])
+        
+        selezioneMezziEdges=jReq['selezioneMezziEdges']  
+        if selezioneMezziEdges=="None":
+            selezioneMezziEdges=None
+        else:
+            pass
+            print(selezioneMezziEdges)
+            print(type(selezioneMezziEdges))
+        #--------------------
+        
+        
+
+        tab4graph=estrai_tabella_per_grafo(tg_period,tg_perc,listaMezzi,flow,product,criterio,selezioneMezziEdges,DS_COMEX)
+
+        AnalisiFlag=selezioneMezziEdges ########################################
+        
+        pos,JSON,G=makeGraph(tab4graph,pos,weight_flag,flow,AnalisiFlag)
+
+        if pos is None:
+            if JSON is None:
+                return "Graph empty \n Increase the treshold"
+        
+        resp = Response(response=JSON,
+                    status=200,
+                    mimetype="application/json")
+
+        return resp
+
+    else:
+        return str("only post")
+
+    
+    
+    
+    
+    
+    
 
 @app.route('/hello')
 def hello():
