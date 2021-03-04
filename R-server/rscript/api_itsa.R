@@ -9,7 +9,7 @@ itsa_diag <- function(flow,VAR,country,partner,fcst,fcstpolind ){
   #decido anno e mese di trattamento (123 = MARZO 2020)
   year  = 2020 
   month = 3    # marzo
-  
+  djsonfcst<-NA
   dati<-data_function(flow,VAR,country,partner)
   dati<-dati[order(dati$year,dati$month),]
   

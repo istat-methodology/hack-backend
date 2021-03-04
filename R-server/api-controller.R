@@ -71,6 +71,10 @@ app$add_get(
     GMR<-loadData()
     .res$set_body("Load data ok")
     .res$set_content_type("application/json")
+    .res$set_header("Access-Control-Allow-Origin", "*")
+    .res$set_header("Access-Control-Allow-Methods","*")
+    .res$set_header("Access-Control-Allow-Headers", "*")
+    
   })
 
 # http://localhost:5000/desc-summary?region=Italy&subregion=Italy
@@ -81,8 +85,10 @@ app$add_get(
     stats<-descSummary(.req$get_param_query("region"),.req$get_param_query("subregion")) 
     print("/desc ok")
     .res$set_body(toJSON(stats))
-    
-  #  .res$set_content_type("text/html")
+    .res$set_header("Access-Control-Allow-Origin", "*")
+    .res$set_header("Access-Control-Allow-Methods","*")
+    .res$set_header("Access-Control-Allow-Headers", "*")
+    #  .res$set_content_type("text/html")
   })
 
 app$add_get(
@@ -91,9 +97,13 @@ app$add_get(
     print("/desc-summary-j")
     stats<-descSummary(.req$get_param_query("region"),.req$get_param_query("subregion")) 
     print("/desc ok")
+    .res$set_header("Access-Control-Allow-Origin", "*")
+    .res$set_header("Access-Control-Allow-Methods","*")
+    .res$set_header("Access-Control-Allow-Headers", "*")
+    
     .res$set_body(stats)
-   
-.res$set_content_type("application/json")
+    
+    .res$set_content_type("application/json")
   })
 
 
@@ -118,6 +128,9 @@ app$add_get(
     resp<-PlotMobComp(.req$get_param_query("region"),.req$get_param_query("subregion"))  
     print("/mobility ok")
     .res$set_body(resp)
+    .res$set_header("Access-Control-Allow-Origin", "*")
+    .res$set_header("Access-Control-Allow-Methods","*")
+    .res$set_header("Access-Control-Allow-Headers", "*")
     
     .res$set_content_type("application/json")
   })
@@ -140,7 +153,11 @@ app$add_get(
     
     .res$set_body( resp)
     .res$set_content_type("application/json")
- #   .res$set_content_type("text/html")
+    .res$set_header("Access-Control-Allow-Origin", "*")
+    .res$set_header("Access-Control-Allow-Methods","*")
+    .res$set_header("Access-Control-Allow-Headers", "*")
+    
+    #   .res$set_content_type("text/html")
   })
 
 ###############  FUNZIONI FEDERICO ###################
@@ -155,6 +172,10 @@ app$add_get(
     COMEXT_EXP<-loadcomext("2")
     #db<-loadcomext(.req$get_param_query("flow"))
     .res$set_body("Load data ok")
+    .res$set_header("Access-Control-Allow-Origin", "*")
+    .res$set_header("Access-Control-Allow-Methods","*")
+    .res$set_header("Access-Control-Allow-Headers", "*")
+    
     .res$set_content_type("application/json")
   })
 
@@ -191,6 +212,11 @@ app$add_get(
     print("/bec ok")
     .res$set_body(resp)
     
+    .res$set_header("Access-Control-Allow-Origin", "*")
+    .res$set_header("Access-Control-Allow-Methods","*")
+    .res$set_header("Access-Control-Allow-Headers", "*")
+    
+    
     .res$set_content_type("application/json")
   })
 
@@ -211,10 +237,15 @@ app$add_get(
     print("/sa")
     resp<-sa(.req$get_param_query("flow"),.req$get_param_query("var"),
              .req$get_param_query("country"),.req$get_param_query("partner"),
-			 .req$get_param_query("year"),.req$get_param_query("month")) 
+             .req$get_param_query("year"),.req$get_param_query("month")) 
     
     .res$set_body(resp)
     print("/sa ok")
+    
+    .res$set_header("Access-Control-Allow-Origin", "*")
+    .res$set_header("Access-Control-Allow-Methods","*")
+    .res$set_header("Access-Control-Allow-Headers", "*")
+    
     .res$set_content_type("application/json")
   })
 
@@ -227,11 +258,15 @@ app$add_get(
   FUN = function(.req, .res) {
     print("/itssa")
     resp<-itsa_diag(.req$get_param_query("flow"),.req$get_param_query("var"),
-             .req$get_param_query("country"),.req$get_param_query("partner"),
-             .req$get_param_query("fcst"),.req$get_param_query("fcstpolind")) 
-  
+                    .req$get_param_query("country"),.req$get_param_query("partner"),
+                    .req$get_param_query("fcst"),.req$get_param_query("fcstpolind")) 
+    
     .res$set_body(resp)
     print("/itsa ok")
+    .res$set_header("Access-Control-Allow-Origin", "*")
+    .res$set_header("Access-Control-Allow-Methods","*")
+    .res$set_header("Access-Control-Allow-Headers", "*")
+    
     .res$set_content_type("application/json")
   })
 
