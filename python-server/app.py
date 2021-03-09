@@ -202,7 +202,7 @@ def makeGraph(tab4graph,pos_ini,weight_flag,flow,AnalisiFlag):
     def calc_metrics(Grafo,FlagWeight): 
         in_deg = nx.in_degree_centrality(Grafo)
 
-
+        Metrics ={}
         vulner={}
         for k, v in in_deg.items():
 
